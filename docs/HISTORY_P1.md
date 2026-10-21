@@ -45,8 +45,21 @@ ROADMAP.md tracks feature completion; this file is the context a new session nee
 - User changed CLAUDE.md Workflow: **HISTORY = context log** updated on every prompt/work item; **ROADMAP = feature completion log**. Confirmed with user: still commit at end of each feature (user pushes); OpenSky research inserted as F1.2 (done), architecture renumbered to F1.3.
 - Done: rewrote this file as a session log; updated ROADMAP; fixed dangling end-of-feature line in CLAUDE.md; updated `/finish-feature` skill to match.
 
+### How to start a new session
+- Asked: best practice for starting a new session.
+- Answered: commit, push, then `/clear` or exit and run `claude`. Begin in plan mode with "Resume work" or "Start F1.3". CLAUDE.md loads automatically and points to ROADMAP + HISTORY. Use `--continue`/`--resume` only to pick up an interrupted conversation, not to start a new feature.
+
+### Session 2 — `--continue` → F1.3 started
+- Asked: `--continue` (resume). Took the next unchecked feature, F1.3. No `.env` yet, so design proceeded without authenticated OpenSky tests; flagged as carried over.
+
+### F1.3 — Architecture & API design complete
+- Done: `docs/ARCHITECTURE.md` (diagram, decisions D1–D10, polling budget table, HTTP contract, code map, open questions). Typed stubs in `backend/src/controltower/`: `models.py`, `config.py`, `polling.py`, `store.py`, `providers/{base,opensky,adsbdb}.py`, `api/{app,schemas}.py`. Added deps `fastapi`, `httpx`, `pydantic-settings`; enabled the `pydantic.mypy` plugin. `tests/test_design.py` (13 tests) pins the contract with a fake store and covers the credit tiers and poll-interval math. Extended `.env.example` with tuning knobs. 15 tests pass; ruff + mypy strict clean.
+- Decisions: Protocol interfaces for providers/store (swappable, easy fakes). Frozen dataclass domain models kept separate from Pydantic API schemas. SI units in field names. `icao24` as key. Single process + in-memory store. Clients poll and dead-reckon (no WebSocket yet). Tracks built from our own polls. Route cache 24 h including misses. Stubs return HTTP 501. Default poll: **global every 96 s** (4000 credits, 10% reserve, 4 credits/poll), because any box over 400 sq° costs the same as global. Demand-driven pause after 10 min idle.
+- Real logic already in place: `credit_cost()`, `poll_interval_s()`, `BoundingBox` validation, bbox query parsing, domain→schema converters. Everything else raises `NotImplementedError("Phase 2")`.
+- Notes: corrected my own test arithmetic (box interval is 24 s with the reserve, not 22 s). Starlette warns that `TestClient` on `httpx` is deprecated in favour of `httpx2`; left as is.
+
 ### Next
-- **F1.3 Architecture & API design** (new session).
-- Before/early in F1.3: user to create a free OpenSky account and API client (credentials into `.env`, never committed) so we can test 5 s resolution and `/flights/*`.
+- **Phase 2 / F2.1** (user to define in ROADMAP). Suggested order: OpenSky adapter (OAuth2 + state parsing) → in-memory store → poller in the FastAPI lifespan → adsbdb adapter → `uvicorn` run command.
+- User: create an OpenSky account + API client, put credentials in `.env`, then verify 5 s resolution and the token flow.
 - User to push to GitHub and confirm the CI run is green.
-- Open questions: polling cadence vs credits (single region vs global); adsbdb rate limits/terms; OpenSky licence for a public app; peak-hour snapshot size.
+- Open questions: see `docs/ARCHITECTURE.md` §6 (licence, adsbdb terms, peak payload, single-metro focus or global).
