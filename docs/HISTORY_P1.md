@@ -67,6 +67,9 @@ ROADMAP.md tracks feature completion; this file is the context a new session nee
 - Asked: (1) remove the parked tracking code so the backend starts clean; (2) update CLAUDE.md Purpose.
 - Done: deleted `models.py`, `config.py`, `polling.py`, `store.py`, `providers/`, `api/`, `tests/test_design.py`. Removed the `fastapi`, `httpx`, `pydantic-settings` deps and the `pydantic.mypy` plugin. Backend is back to the F1.1 skeleton. All of it can be recovered from commit `3459315`. Renamed `docs/ARCHITECTURE.md` → `docs/TRACKING_ARCHITECTURE.md` (parked; frees the name for the fare design). CLAUDE.md Purpose is now fare search (tracking later); its Environment data source is "fare API, TBD in F1.2". `.env.example`: OpenSky lines commented out as parked, placeholder for fare API keys. README/ROADMAP updated to match.
 
+### Branching: work on `main`
+- Decision (user): day-to-day work happens on **`main`**. `development` is reserved for large, risky feature experiments once the app is live. PR #2 merged `development` into `main`; commit `fb3893d` (scope reset) is on `main`.
+
 ### Next
 - **F1.2 Fare data source research** (new session): first bring the user a shortlist of flight-price APIs with trade-offs; pick one or two together; then write test scripts. Research only, no backend code.
 - User to push to GitHub and confirm the CI run is green.
