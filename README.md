@@ -4,6 +4,8 @@ An app that tracks flights between locations and returns live tracking data to e
 
 **Status:** Phase 1 — project setup. Tooling is in place; flight logic begins in Phase 2. See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
 
+**Research:** [OpenSky API Testing/](OpenSky%20API%20Testing/README.md) — live experiments on the OpenSky API (coverage, refresh rate, credit costs, gaps). Verdict: viable for an MVP with a free account, backend-side caching, and a separate callsign->route lookup.
+
 ## Architecture (planned)
 - **Backend** (`backend/`): Python 3.13. Pulls live aircraft state from the [OpenSky Network](https://opensky-network.org) API and serves it over an HTTP API.
 - **Web frontend** (`web/`, Phase 3): browser UI consuming the backend API.
@@ -42,4 +44,5 @@ docs/               HISTORY_P<phase>.md — dated log per phase
 .github/workflows/  CI
 .claude/            Claude Code settings + /finish-feature skill
 .gitignore          secrets (.env), venvs, caches, OS/editor files
+OpenSky API Testing/  research sandbox: scripts, notes, raw JSON + CSV data
 ```
