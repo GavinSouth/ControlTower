@@ -22,6 +22,7 @@ An app that tracks flights between locations and returns live tracking data to e
 ## Setup
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh   # install uv (once)
+uv python install 3.13 --default                  # optional: make 3.13 your default `python3`
 cd backend
 uv sync                      # creates .venv with Python 3.13 + deps
 uv run pre-commit install    # enable git hooks (once)
@@ -40,4 +41,5 @@ backend/            Python package (src/controltower) + tests
 docs/               HISTORY_P<phase>.md — dated log per phase
 .github/workflows/  CI
 .claude/            Claude Code settings + /finish-feature skill
+.gitignore          secrets (.env), venvs, caches, OS/editor files
 ```
