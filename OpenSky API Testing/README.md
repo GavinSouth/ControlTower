@@ -3,7 +3,7 @@
 Exploratory research (2026-10-20/21) into whether the [OpenSky Network](https://opensky-network.org) REST API can power ControlTower. All tests were run **anonymously** (no account). This folder is a sandbox — not part of the backend package.
 
 ## TL;DR verdict
-**Good enough for an MVP**, with three conditions:
+**Good enough for an MVP (Minimum Viable Product)**, with three conditions:
 1. Create a free OpenSky account (10x credits, 5 s data, unlocks flight history).
 2. Backend polls OpenSky **once** and caches/fans out to all users — users never hit OpenSky directly.
 3. Add a second source for **origin -> destination** (adsbdb.com worked for 7/10 callsigns).

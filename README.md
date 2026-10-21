@@ -40,7 +40,7 @@ uv run ruff check --fix . && uv run ruff format .                               
 ## Project layout
 ```
 backend/            Python package (src/controltower) + tests
-docs/               HISTORY_P<phase>.md — dated log per phase
+docs/               HISTORY_P<phase>.md — context log per phase (every prompt/decision)
 .github/workflows/  CI
 .claude/            Claude Code settings + /finish-feature skill
 .gitignore          secrets (.env), venvs, caches, OS/editor files

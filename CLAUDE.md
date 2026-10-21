@@ -38,7 +38,6 @@ Run from `backend/`:
 - The plan lives in ROADMAP.md; recent history in docs/HISTORY_Px.md. Read both at session start.
 - I'll add updates to ROADMAP.md myself but if I prompt you for a feature or task, add it to the appropriate phase and describe it. Tasks and features are sequential so jump to the next unchecked feature or task if you're asked to resume work.
 - Work one feature (e.g. F1.1) per session unless told otherwise. Then prompt for new session to start next feature.
-- At the end of a feature: run lint + tests, tick the box in ROADMAP.md,
-append a dated entry to the correct docs/HISTORY_Px.md (what changed, decisions, next step), then commit - I'll push.
-- HISTORY_Px.md files will be named based off the phase of work. Write your updates (what changed, decisions, next step) to the appropriate place.
+- At the end of a feature: run lint + tests, tick the box in ROADMAP.md, then commit - I'll push.
+- Any time work or something is prompted or done, add a concise but realistic update in the docs/HISTORY_Px.md. We're going to use this file as a context log and ROADMAP as a feature completion log. 
 - After sessions end and feature development, inform me of the decisions and tooling very concisely and provide a path to the file where work was done. Then, prepare and anticipate to expound on code changes. I want to learn best practices and deepen my understanding.
