@@ -58,8 +58,15 @@ ROADMAP.md tracks feature completion; this file is the context a new session nee
 - Real logic already in place: `credit_cost()`, `poll_interval_s()`, `BoundingBox` validation, bbox query parsing, domain→schema converters. Everything else raises `NotImplementedError("Phase 2")`.
 - Notes: corrected my own test arithmetic (box interval is 24 s with the reserve, not 22 s). Starlette warns that `TestClient` on `httpx` is deprecated in favour of `httpx2`; left as is.
 
+### Scope reset: fare search first, tracking parked
+- Asked: slow down. The first product is **flight fares**: the user picks two airports and dates and gets a list of flights with current prices. Tracking comes later. Research a fare API (as we did with OpenSky) before any development.
+- Done: rewrote ROADMAP. New **F1.2 = fare data source research** (unchecked). The OpenSky research and tracking design moved to **Phase 4 — Live Flight Tracking [PARKED]** as F4.1 (was F1.2) and F4.2 (was F1.3). Earlier entries in this log keep the old numbers. Marked `docs/ARCHITECTURE.md` as parked; reframed README. No code removed: the tracking stubs and `fastapi`/`httpx`/`pydantic-settings` deps stay in `backend/` (commit `3459315`).
+- Lesson: on `--continue` I moved straight into a whole feature without checking in. From now on, confirm scope before starting a feature.
+
+### Clean backend + CLAUDE.md purpose
+- Asked: (1) remove the parked tracking code so the backend starts clean; (2) update CLAUDE.md Purpose.
+- Done: deleted `models.py`, `config.py`, `polling.py`, `store.py`, `providers/`, `api/`, `tests/test_design.py`. Removed the `fastapi`, `httpx`, `pydantic-settings` deps and the `pydantic.mypy` plugin. Backend is back to the F1.1 skeleton. All of it can be recovered from commit `3459315`. Renamed `docs/ARCHITECTURE.md` → `docs/TRACKING_ARCHITECTURE.md` (parked; frees the name for the fare design). CLAUDE.md Purpose is now fare search (tracking later); its Environment data source is "fare API, TBD in F1.2". `.env.example`: OpenSky lines commented out as parked, placeholder for fare API keys. README/ROADMAP updated to match.
+
 ### Next
-- **Phase 2 / F2.1** (user to define in ROADMAP). Suggested order: OpenSky adapter (OAuth2 + state parsing) → in-memory store → poller in the FastAPI lifespan → adsbdb adapter → `uvicorn` run command.
-- User: create an OpenSky account + API client, put credentials in `.env`, then verify 5 s resolution and the token flow.
+- **F1.2 Fare data source research** (new session): first bring the user a shortlist of flight-price APIs with trade-offs; pick one or two together; then write test scripts. Research only, no backend code.
 - User to push to GitHub and confirm the CI run is green.
-- Open questions: see `docs/ARCHITECTURE.md` §6 (licence, adsbdb terms, peak payload, single-metro focus or global).

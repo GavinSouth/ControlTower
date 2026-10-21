@@ -1,4 +1,6 @@
-# Architecture & API design (F1.3)
+# Live tracking architecture (F4.2, parked)
+
+> **Parked.** Written for live flight tracking, before the product focus moved to fare search (see ROADMAP). Not being built now. The typed stubs it describes ("Code map") were removed from `backend/`; recover them with `git show 3459315`.
 
 Design for the Phase 2 backend. Typed stubs for everything below live in `backend/src/controltower/`; `backend/tests/test_design.py` pins the contract. Inputs: the F1.2 findings in `OpenSky API Testing/README.md`.
 

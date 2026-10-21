@@ -2,7 +2,9 @@
 
 ## Purpose
 This repo / app contains the first iteration of a system that:
-1. tracks flights between locations and returns live data tracking for end users. 
+1. lets a user pick two airports and travel dates, then returns a list of flights with current prices so they can compare fares.
+
+Later: live flight tracking (parked, ROADMAP Phase 4).
 
 (Scope will increase in time)
 
@@ -10,14 +12,14 @@ This repo / app contains the first iteration of a system that:
 Backend:
 - Python 3.13, managed by **uv** (deps + interpreter; lockfile `backend/uv.lock`)
 - **ruff** (lint + format), **mypy** (strict, `src/`), **pytest**, **pre-commit**
-- Data source: **OpenSky Network** REST API (credentials in `.env`, see `.env.example`)
+- Data source: flight-fare API, TBD in F1.2 (credentials in `.env`, see `.env.example`). OpenSky Network was researched for tracking (parked).
 
 Frontend:
 - Web first (Phase 3), iOS later (SwiftUI or wrapped web app). Python backend exposes an HTTP API that both consume.
 
 ## Layout
 - `backend/` — Python package (`src/controltower/`), tests (`tests/`), `pyproject.toml` (tool config)
-- `docs/` — `HISTORY_Px<phase>.md` per phase
+- `docs/` — `HISTORY_Px<phase>.md` per phase; `TRACKING_ARCHITECTURE.md` (parked design)
 - `.github/workflows/ci.yml` — CI: lint, format, types, tests on push/PR
 - `.claude/` — project settings (permission allowlist) and skills (`/finish-feature`)
 - `web/`, `ios/` — future frontends
