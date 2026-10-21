@@ -1,0 +1,6 @@
+endpoint,status,body_preview
+/flights/all?begin=1792468224&end=1792475424,403,You cannot access historical flights
+/flights/arrival?airport=KJFK&begin=1792468224&end=1792475424,403,You cannot access historical flights
+/flights/departure?airport=KJFK&begin=1792468224&end=1792475424,403,You cannot access historical flights
+/flights/aircraft?icao24=39de4f&begin=1792468224&end=1792475424,403,You cannot access historical flights
+/tracks/all?icao24=39de4f&time=0,200,"{""icao24"":""39de4f"",""callsign"":""TVF99PC "",""startTime"":1.792561413E9,""endTime"":1.792561822E9,""path"":[[1792561413,48.7319,2"
