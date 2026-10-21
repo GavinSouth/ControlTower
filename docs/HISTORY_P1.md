@@ -73,3 +73,18 @@ ROADMAP.md tracks feature completion; this file is the context a new session nee
 ### Next
 - **F1.2 Fare data source research** (new session): first bring the user a shortlist of flight-price APIs with trade-offs; pick one or two together; then write test scripts. Research only, no backend code.
 - User to push to GitHub and confirm the CI run is green.
+
+---
+
+## 2026-10-20 — Session 3
+
+### `--resume` → F1.2 fare data source research started
+- Asked: resume. Next unchecked feature is F1.2. Per the confirm-scope rule, I brought a shortlist before building anything.
+- Shortlist (web check): **Amadeus Self-Service shut down** (keys disabled 17 Jul 2026; no new sign-ups). **Kiwi Tequila** invite-only. **Skyscanner** needs commercial approval. Viable: SerpApi Google Flights (scraped live Google prices, ~250 free/mo), Duffel (official airline/booking API; test mode = sandbox data), Travelpayouts (cached, affiliate), FlightAPI.io (20 free calls).
+- Decision (user): hands-on test of **SerpApi** and **Duffel**. Test first; no backend built around a source until one is proven to fit. Plan: `~/.claude/plans/resume-transient-snail.md`.
+- Done: `Fare API Testing/` (sibling of the OpenSky folder, stdlib-only). `common.py` (`.env` loader, non-raising HTTP, secret scrubbing, raw/CSV I/O, shared `FARE_FIELDS` schema), `serpapi_client.py`, `duffel_client.py`, `fares.py` (search + raw cache + summary), scripts `01_airport_lookup` … `05_compare`. Added `SERPAPI_API_KEY`, `DUFFEL_ACCESS_TOKEN` to `.env.example`. README with setup/run steps; findings TBD.
+- Decisions: one normalized row per itinerary so the two providers' CSVs are directly comparable. Raw responses are cached and reused, so re-runs cost no SerpApi quota (budget ~22 searches). `04_freshness` uses `no_cache=true`. Flight numbers are normalized for the join (Duffel zero-pads, e.g. `ZZ 0001`).
+- Verified offline: ruff clean; normalizers + scrubber tested against synthetic responses; scripts skip cleanly with no keys. **Not yet run live**: no `.env` exists.
+
+### Next
+- User: create SerpApi + Duffel (test) accounts and fill `.env`. Then run 01–05, fill in the README findings + verdict, and close F1.2 with `/finish-feature`.

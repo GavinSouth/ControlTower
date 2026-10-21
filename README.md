@@ -2,7 +2,9 @@
 
 An app for comparing flight prices: pick two airports and your dates, and see a list of flights with current fares. Live flight tracking is planned for later.
 
-**Status:** Phase 1. Tooling is set up. Next: research a flight-price API (F1.2). Earlier live-tracking work (OpenSky research, tracking design) is parked under Phase 4. See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
+**Status:** Phase 1. Tooling is set up. In progress: F1.2, hands-on testing of two flight-price APIs (SerpApi Google Flights and Duffel) before any backend is built. Earlier live-tracking work (OpenSky research, tracking design) is parked under Phase 4. See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
+
+**Research (fares, in progress):** [Fare API Testing/](Fare%20API%20Testing/README.md): scripts comparing SerpApi (Google Flights) and Duffel on search results, airport lookup, price freshness, cost, and terms.
 
 **Research (tracking, parked):** [OpenSky API Testing/](OpenSky%20API%20Testing/README.md) — live experiments on the OpenSky API (coverage, refresh rate, credit costs, gaps). Verdict: viable for an MVP with a free account, backend-side caching, and a separate callsign->route lookup.
 
@@ -46,5 +48,6 @@ docs/               HISTORY_P<phase>.md (context log per phase), TRACKING_ARCHIT
 .github/workflows/  CI
 .claude/            Claude Code settings + /finish-feature skill
 .gitignore          secrets (.env), venvs, caches, OS/editor files
-OpenSky API Testing/  research sandbox: scripts, notes, raw JSON + CSV data
+Fare API Testing/     F1.2 research sandbox: fare API scripts, raw JSON + CSV data, findings
+OpenSky API Testing/  parked tracking research: scripts, notes, raw JSON + CSV data
 ```
