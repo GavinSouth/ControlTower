@@ -8,18 +8,27 @@ This repo / app contains the first iteration of a system that:
 
 ## Environment
 Backend:
-- Python 3.13
-(Other python specific tools/libraries will be specified in time)
+- Python 3.13, managed by **uv** (deps + interpreter; lockfile `backend/uv.lock`)
+- **ruff** (lint + format), **mypy** (strict, `src/`), **pytest**, **pre-commit**
+- Data source: **OpenSky Network** REST API (credentials in `.env`, see `.env.example`)
 
 Frontend:
-- Swift?
-TBD - I want there to be sound backend logic and tools in python. But the frontend of the app to be available on iOS and on web browsers.
+- Web first (Phase 3), iOS later (SwiftUI or wrapped web app). Python backend exposes an HTTP API that both consume.
 
 ## Layout
-- TBD
+- `backend/` — Python package (`src/controltower/`), tests (`tests/`), `pyproject.toml` (tool config)
+- `docs/` — `HISTORY_P<phase>.md` per phase
+- `.github/workflows/ci.yml` — CI: lint, format, types, tests on push/PR
+- `.claude/` — project settings (permission allowlist) and skills (`/finish-feature`)
+- `web/`, `ios/` — future frontends
 
 ## Commands
-- TBD
+Run from `backend/`:
+- Setup: `uv sync`
+- All checks: `uv run ruff check . && uv run ruff format --check . && uv run mypy src && uv run pytest`
+- Auto-fix: `uv run ruff check --fix . && uv run ruff format .`
+- Hooks: `uv run pre-commit install` (once), `uv run pre-commit run --all-files`
+- End of feature: `/finish-feature`
 
 ## Rules
 - I'll manage the git ignore; never paste credentials into CLAUDE.md or elsewhere.

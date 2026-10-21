@@ -1,0 +1,23 @@
+---
+name: finish-feature
+description: Close out the current ROADMAP feature — run checks, tick ROADMAP, log HISTORY, refresh README, commit (never push). Use when a feature (e.g. F1.1) is done.
+---
+
+# Finish feature
+
+Run these steps in order. Stop and report if any check fails — do not tick or commit on red.
+
+1. **Identify the feature**: the first unchecked `- [ ] F<phase>.<n>` in `ROADMAP.md` (or the one the user names).
+2. **Run checks** from `backend/`:
+   `uv run ruff check . && uv run ruff format --check . && uv run mypy src && uv run pytest`
+3. **Tick ROADMAP**: change that line to `- [x]`. Update the phase status tag (`[NOT STARTED]` → `[IN PROGRESS]` / `[DONE]`).
+4. **Log HISTORY**: append to `docs/HISTORY_P<phase>.md` (create it if missing, header `# History — Phase <phase>`):
+   ```
+   ## YYYY-MM-DD — F<phase>.<n>
+   - Done: <what changed, files touched>
+   - Decision: <choices made and why>
+   - Next: <next feature id + any open questions>
+   ```
+5. **Refresh README.md**: reflect new features, setup steps, or commands.
+6. **Commit** on the current branch: `git add` the specific changed files (never `.env` or secrets), message `<type>: F<phase>.<n> <summary>` (type = feat/fix/chore/docs). Never push — the user pushes.
+7. **Report** concisely: decisions, tooling, file paths changed; suggest starting a new session for the next feature.
