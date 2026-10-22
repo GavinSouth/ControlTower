@@ -21,7 +21,9 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
 
 ## Phase 3 — Web Frontend  [IN PROGRESS]
 - [x] F3.1 Trip list, trip timeline view, add/edit items. **First reviewable local web app.** React + TypeScript + Vite + Tailwind in `web/`; types generated from the API's OpenAPI schema; demo trip seeder; CI web job.
-- [ ] F3.2 TBD: editing for day extras and log entries, a places page, and polish from your F3.1 review.
+- [ ] F3.2 Trip details & polish from the F3.1 review:
+  - **Trip location** (user request): an optional destination field when creating or editing a trip, at any level of detail, e.g. "Shinjuku, Japan" or just "Japan". It shows on trip cards and the trip header. Needs a new `trip` column + Alembic migration, API and schema updates, `npm run gen:api`, and the TripForm field. Open: free text only, or also store a country code for filtering and maps later.
+  - Editing for day extras and log entries; a places page.
 
 ## Phase 4 — Agentic Trip Log  [NOT STARTED]
 - [ ] F4.1 Agentic trip log research. Which signals can feed the minutes (manual check-ins, phone location, calendar, booking emails, photos); how an LLM agent turns them into a daily log; privacy and consent. Research only. (Moved from F1.3 so the web app comes first; the `log_entry` table already exists in the design.)

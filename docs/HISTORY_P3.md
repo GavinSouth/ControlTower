@@ -46,6 +46,14 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
   - Full stack on a scratch DB (your real DB untouched): migrate → demo seed → uvicorn :8000 + Vite :5173 → `/api/trips` and the timeline through the proxy (5 days with correct roles, log entry on Day 2, the idea unscheduled), and the SPA deep link returned 200.
   - Not verified: an actual browser render (no browser automation here). That's the user's review.
 
+### Running the app for review
+- Asked: where is the link to the app? Answered: there's no hosted URL; it's local at http://localhost:5173 and only works while both servers run.
+- Done: migrated the real local DB and seeded "Japan (demo)" into it (deletable from the UI). Started uvicorn on :8000 and Vite on :5173 as background tasks; health check and `/api/trips` verified through the proxy.
+
+### Feature requests for F3.2
+- Asked: jot down features before restarting the session.
+  1. **Trip location**: more user-entered fields on a new trip, starting with a location at any level of detail ("Shinjuku, Japan" or "Japan"). Added to ROADMAP F3.2 with the implementation outline (DB column + migration, API, regenerated types, TripForm, shown on cards and header). Open question: free text vs also a country code.
+
 ### Next
 - **User review of the running app** → feedback becomes **F3.2** (also planned: editing for day extras and log entries, a places page).
 - Then Phase 4 (F4.1 agentic trip log research).
