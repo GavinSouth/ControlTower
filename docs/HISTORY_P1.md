@@ -47,8 +47,29 @@ The detailed log of the earlier scopes was condensed on 2026-10-21; the full ver
 
 ### Flight data deprioritized
 - Asked: push flight data much further down the priority list.
-- Done: moved the SerpApi spike and flight search/attach into a new last phase, **Phase 6 — Flight Lookup [LOW PRIORITY]** (F6.1 spike, F6.2 adapter). Removed them from Phase 1/2. Agentic log research is now **F1.3** (was F1.4). Updated CLAUDE.md Purpose/Environment and README.
+- Done: moved the SerpApi spike and flight search/attach into a new last phase, **Phase 6 — Flight Lookup [LOW PRIORITY]** (F6.1 spike, F6.2 adapter; renumbered Phase 7 / F7.x below). Removed them from Phase 1/2. Agentic log research is now **F1.3** (was F1.4). Updated CLAUDE.md Purpose/Environment and README.
 - Decision: Flight stays an item type in the data model (entered manually, like a stay or activity). Only *automatic lookup* moved down.
 
+### F1.2 — Trip domain model & data design
+- Asked: start F1.2. Confirmed scope first (4 questions).
+- User decisions: **single user now, scale up later** (accounts, then shared trips, at separate points); **plan + actual** fields on items; **SQLite + SQLAlchemy 2.0 + Alembic**; **days derived** from item times, not stored.
+- Done: `docs/ARCHITECTURE.md` with decisions D1–D10, a Mermaid ER diagram, entity field lists, the timeline rule, DB conventions for F2.1, an API resource draft, a scale-up table, and open questions. ROADMAP: new **Phase 6 — Accounts & Sharing** (F6.1 accounts, F6.2 shared trips); flight lookup renumbered to **Phase 7** (F7.1, F7.2). Updated README and CLAUDE.md.
+- Design decisions (mine):
+  - Item = common table + per-kind detail tables (SQLAlchemy joined-table inheritance). Kinds: flight, stay, transport, activity, note.
+  - Every item has `start_tz` + `end_tz` (IANA), and times are stored UTC.
+  - Day placement: an item appears on each local date from its start day (in `start_tz`) to its end day (in `end_tz`), with roles starts/continues/ends/single. Effective time = actual else planned.
+  - `trip_day` rows only for per-day extras.
+  - Reusable `place` rows with their own tz.
+  - `log_entry` is separate from items (source + kind + raw JSON); agents propose actuals, never overwrite.
+  - UUID keys, string enums, Decimal money, a UTC-enforcing column type, SQLite `foreign_keys` pragma.
+  - Past/current/upcoming is computed, never stored.
+  - Proposed FastAPI + Pydantic for the API (decide in F2.2).
+- Status: user reviewed and ran `/finish-feature`.
+
+### F1.2 — Trip domain model & data design complete
+- Done: `docs/ARCHITECTURE.md` (new). ROADMAP ticked F1.2 and added Phase 6 Accounts & Sharing; flight lookup moved to Phase 7. README and CLAUDE.md updated. Checks green (ruff, format, mypy, pytest 2 passed). No backend code: models are built in F2.1.
+- Decisions: Trip → Item tree with derived days; plan + actual times; UTC + per-end IANA zone; joined-table item kinds; shared places; separate log entries; SQLite + SQLAlchemy 2.0 + Alembic; UUID keys; single user with an `owner_id` so accounts and sharing can be added later.
+- Next: **F1.3 Agentic trip log research** (new session, plan mode). Open questions: which signals are realistic on web vs iOS (location needs the phone app); manual check-ins as the MVP signal; which LLM and where it runs; privacy of location history.
+
 ### Next
-- **F1.2 Trip domain model & data design** (new session, plan mode). Start by confirming the entity list and the open questions: multi-traveller trips? planned vs actual? which DB?
+- **F1.3 Agentic trip log research** (new session).

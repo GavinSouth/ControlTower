@@ -2,7 +2,7 @@
 
 A trip tracking app. ControlTower keeps your past and upcoming trips organized and broken down day by day: each **trip** holds **days**, and each day holds **items** such as flights, stays, activities, transport, and notes. Later, an agent will keep a running **trip log** ("minutes") of where you are and what you're doing. Automatic flight lookup (SerpApi) is a low-priority extra at the end of the roadmap; flights are entered by hand until then.
 
-**Status:** Phase 1. Tooling is set up. Next: design the trip data model and database (F1.2). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
+**Status:** Phase 1. Tooling set up (F1.1) and trip data model designed (F1.2): see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (entities, day-by-day timeline rule, DB conventions, API draft). Next: F1.3 agentic trip log research. See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
 
 ## How a trip is organized (planned)
 ```
@@ -16,14 +16,15 @@ Trip  "Japan, Apr 2027"
 │   └── Log  "09:40 arrived at the market, ..."   ← agentic minutes (later)
 └── ...
 ```
-The final model is decided in F1.2 (`docs/ARCHITECTURE.md`).
+Items that span days (stays, overnight flights) are stored once and appear on every day they touch; days are derived, not stored. Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Architecture (planned)
 - **Backend** (`backend/`): Python 3.13 HTTP API over a database of trips, days, and items.
 - **Agentic trip log** (Phase 4): turns signals (check-ins, location, bookings) into a daily log.
 - **Web frontend** (`web/`, Phase 3): trip list and day-by-day timeline.
 - **iOS** (Phase 5): SwiftUI app or wrapped web app on the same API.
-- **Flight lookup** (Phase 6, low priority): SerpApi adapter, on demand and cached.
+- **Accounts & sharing** (Phase 6): single-user until then; the model already has trip owners.
+- **Flight lookup** (Phase 7, low priority): SerpApi adapter, on demand and cached.
 
 ## Tech stack
 | Concern | Tool |
@@ -34,8 +35,8 @@ The final model is decided in F1.2 (`docs/ARCHITECTURE.md`).
 | Tests | pytest |
 | Git hooks | pre-commit |
 | CI | GitHub Actions (`.github/workflows/ci.yml`) |
-| Database | TBD in F1.2 (proposal: SQLite → Postgres, SQLAlchemy 2.0, Alembic) |
-| Flight lookup (Phase 6) | SerpApi Google Flights (free tier 250 searches/mo) |
+| Database | SQLite (Postgres-ready) + SQLAlchemy 2.0 + Alembic (built in F2.1) |
+| Flight lookup (Phase 7) | SerpApi Google Flights (free tier 250 searches/mo) |
 
 ## Setup
 ```bash
@@ -44,7 +45,7 @@ uv python install 3.13 --default                  # optional: make 3.13 your def
 cd backend
 uv sync                      # creates .venv with Python 3.13 + deps
 uv run pre-commit install    # enable git hooks (once)
-cp ../.env.example ../.env   # only needed for Phase 6 flight lookup (never commit .env)
+cp ../.env.example ../.env   # only needed for Phase 7 flight lookup (never commit .env)
 ```
 
 ## Commands (from `backend/`)
@@ -56,7 +57,7 @@ uv run ruff check --fix . && uv run ruff format .                               
 ## Project layout
 ```
 backend/            Python package (src/controltower) + tests
-docs/               HISTORY_P<phase>.md (context log per phase), python_research.md (tooling notes)
+docs/               ARCHITECTURE.md (data model), HISTORY_P<phase>.md (context log per phase), python_research.md (tooling notes)
 .github/workflows/  CI
 .claude/            Claude Code settings + /finish-feature skill
 .gitignore          secrets (.env), venvs, caches, OS/editor files
