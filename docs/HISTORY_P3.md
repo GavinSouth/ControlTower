@@ -175,3 +175,4 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
 - **Next session:** read the canvas comments → settle the decisions above → update the canvas or design system if needed → start the F3.4 build (backend tables + migration first).
 
 - Asked: start the app for a look. Ran `alembic upgrade head` (already current), then started uvicorn :8000 + Vite :5173 in the background; `/api/health` ok and "Japan (demo)" listed through the proxy.
+- Asked: is the past-trip work done? It is not in the app. Answered: no. F3.3 was design only; the build is F3.4, not started (waiting on the canvas review).
