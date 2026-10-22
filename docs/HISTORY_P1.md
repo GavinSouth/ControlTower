@@ -18,7 +18,7 @@ The detailed log of the earlier scopes was condensed on 2026-10-21; the full ver
 2. **Fare comparison** (pick two airports and dates → priced flight list). Shortlist: Amadeus Self-Service shut down (Jul 2026), Kiwi invite-only, Skyscanner commercial-only. Built a SerpApi + Duffel test harness; never run live (no keys).
 - All research folders, scripts, and the tracking design were removed in the scope reset below. Recover them from commit `2580a78`.
 
-### SerpApi facts (from docs, unverified live; input for F1.3)
+### SerpApi facts (from docs, unverified live; input for F6.1)
 - Billing: 1 search = 1 successful request, whatever the result count. Cached (identical params, 1 h), errored, and failed requests are free. Free 250/mo (50/h); $25 → 1k, $75 → 5k, $150 → 15k (+ U.S. Legal Shield).
 - One-way request (`engine=google_flights`, `departure_id`, `arrival_id`, `outbound_date`, `type=2`) returns `best_flights[]` + `other_flights[]` (whole itineraries: one `price`, `total_duration`, `layovers`, segments with airport/local time/airline/flight number/aircraft/class/legroom/free-text `extensions`), plus `price_insights`. No pagination. No booking URL or structured baggage (booking needs another `booking_token` call). A round trip costs 2+ calls (`departure_token`).
 - Filters (`stops`, `max_price`, `bags`, `outbound_times`, `include_airlines`, `max_duration`, `sort_by`…) are applied by Google, and each new combination is billable. So fetch broad, cache, and filter locally.
@@ -44,6 +44,11 @@ The detailed log of the earlier scopes was condensed on 2026-10-21; the full ver
   - Store times in UTC plus the local zone.
   - Database proposal: SQLite to start, Postgres-ready, SQLAlchemy 2.0 + Alembic.
   - The data model comes before any SerpApi or agent work, because both attach to it.
+
+### Flight data deprioritized
+- Asked: push flight data much further down the priority list.
+- Done: moved the SerpApi spike and flight search/attach into a new last phase, **Phase 6 — Flight Lookup [LOW PRIORITY]** (F6.1 spike, F6.2 adapter). Removed them from Phase 1/2. Agentic log research is now **F1.3** (was F1.4). Updated CLAUDE.md Purpose/Environment and README.
+- Decision: Flight stays an item type in the data model (entered manually, like a stay or activity). Only *automatic lookup* moved down.
 
 ### Next
 - **F1.2 Trip domain model & data design** (new session, plan mode). Start by confirming the entity list and the open questions: multi-traveller trips? planned vs actual? which DB?

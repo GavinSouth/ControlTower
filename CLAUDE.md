@@ -3,8 +3,9 @@
 ## Purpose
 ControlTower is a trip tracking app and system:
 1. Records past and upcoming trips in a backend database, organized as nodes: Trip → Days → Items (flights, stays, activities, transport, notes), so each trip breaks down day by day.
-2. Looks up flights occasionally via SerpApi (Google Flights) and attaches them to a trip. Searches are on demand and cached, never a core loop (free tier: 250/mo).
-3. Later: an agent tracks where the traveller is and what they're doing, and keeps a running trip log ("minutes").
+2. Later: an agent tracks where the traveller is and what they're doing, and keeps a running trip log ("minutes").
+
+Low priority, last (ROADMAP Phase 6): automatic flight lookup via SerpApi (Google Flights) to fill in Flight items. Until then, flights are entered manually like any other item.
 
 (Scope will increase in time)
 
@@ -13,7 +14,7 @@ Backend:
 - Python 3.13, managed by **uv** (deps + interpreter; lockfile `backend/uv.lock`)
 - **ruff** (lint + format), **mypy** (strict, `src/`), **pytest**, **pre-commit**
 - Database: TBD in F1.2 (proposal: SQLite → Postgres-ready, SQLAlchemy 2.0, Alembic)
-- Flight lookup: SerpApi Google Flights (`SERPAPI_API_KEY` in `.env`, see `.env.example`)
+- Flight lookup (low priority, Phase 6): SerpApi Google Flights (`SERPAPI_API_KEY` in `.env`, see `.env.example`)
 
 Frontend:
 - Web first (Phase 3), iOS later (SwiftUI or wrapped web app). Python backend exposes an HTTP API that both consume.

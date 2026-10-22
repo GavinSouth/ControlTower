@@ -1,6 +1,6 @@
 # ControlTower
 
-A trip tracking app. ControlTower keeps your past and upcoming trips organized and broken down day by day: each **trip** holds **days**, and each day holds **items** such as flights, stays, activities, transport, and notes. When you need a flight, it can look one up (via SerpApi / Google Flights) and attach it to the trip. Later, an agent will keep a running **trip log** ("minutes") of where you are and what you're doing.
+A trip tracking app. ControlTower keeps your past and upcoming trips organized and broken down day by day: each **trip** holds **days**, and each day holds **items** such as flights, stays, activities, transport, and notes. Later, an agent will keep a running **trip log** ("minutes") of where you are and what you're doing. Automatic flight lookup (SerpApi) is a low-priority extra at the end of the roadmap; flights are entered by hand until then.
 
 **Status:** Phase 1. Tooling is set up. Next: design the trip data model and database (F1.2). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
 
@@ -19,10 +19,11 @@ Trip  "Japan, Apr 2027"
 The final model is decided in F1.2 (`docs/ARCHITECTURE.md`).
 
 ## Architecture (planned)
-- **Backend** (`backend/`): Python 3.13 HTTP API over a database of trips, days, and items. A small SerpApi adapter handles on-demand, cached flight lookups.
+- **Backend** (`backend/`): Python 3.13 HTTP API over a database of trips, days, and items.
 - **Agentic trip log** (Phase 4): turns signals (check-ins, location, bookings) into a daily log.
 - **Web frontend** (`web/`, Phase 3): trip list and day-by-day timeline.
 - **iOS** (Phase 5): SwiftUI app or wrapped web app on the same API.
+- **Flight lookup** (Phase 6, low priority): SerpApi adapter, on demand and cached.
 
 ## Tech stack
 | Concern | Tool |
@@ -34,7 +35,7 @@ The final model is decided in F1.2 (`docs/ARCHITECTURE.md`).
 | Git hooks | pre-commit |
 | CI | GitHub Actions (`.github/workflows/ci.yml`) |
 | Database | TBD in F1.2 (proposal: SQLite → Postgres, SQLAlchemy 2.0, Alembic) |
-| Flight lookup | SerpApi Google Flights (free tier 250 searches/mo) |
+| Flight lookup (Phase 6) | SerpApi Google Flights (free tier 250 searches/mo) |
 
 ## Setup
 ```bash
@@ -43,7 +44,7 @@ uv python install 3.13 --default                  # optional: make 3.13 your def
 cd backend
 uv sync                      # creates .venv with Python 3.13 + deps
 uv run pre-commit install    # enable git hooks (once)
-cp ../.env.example ../.env   # then add SERPAPI_API_KEY (never commit .env)
+cp ../.env.example ../.env   # only needed for Phase 6 flight lookup (never commit .env)
 ```
 
 ## Commands (from `backend/`)
