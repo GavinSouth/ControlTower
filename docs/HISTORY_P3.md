@@ -160,3 +160,16 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
   - Serif voice left as a tweak to decide.
 - Gaps: previews are static (no React bundle); no dark theme (the app has none); `stone-400` hint text is 2.5:1, kept exact from the source. Not rendered or checked here, as the canvas type asks.
 - Next: the user reviews the canvas (comments can go on the artboards), picks sans or serif, then F3.4 builds.
+
+### Session pinned (2026-10-21, evening)
+- State: F3.3 done; F3.4 not started. Working tree clean on `main`; nothing pushed.
+- **Morning review (user):**
+  - The design canvas: https://claude.ai/artifact/TrsVJXeop1z8QH6Bh887wn. Open it and press Play on artboard 4 to try 👍/👎/♥.
+  - The design system: https://claude.ai/artifact/U3TJjZ1ABvNMs8xPzNczwL.
+  - Leave comments on the artboards.
+- **Open decisions for F3.4:**
+  1. Sans or serif journal voice (the `voice` tweak).
+  2. Keep teal stars/♥ and a neutral 👎?
+  3. Keep the Record/Plan toggle and the solid teal cover?
+  4. Skipped items get no buttons: OK?
+- **Next session:** read the canvas comments → settle the decisions above → update the canvas or design system if needed → start the F3.4 build (backend tables + migration first).
