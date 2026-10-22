@@ -1,28 +1,32 @@
 # Roadmap
 
-Core product (first): a user picks two airports and travel dates, and the app returns a list of flights with current prices so they can compare fares.
-Live flight tracking comes later (see Phase 4, parked).
+ControlTower is a **trip tracker**. It keeps past and upcoming trips organized as a tree: **Trip → Days → Items** (flights, stays, activities, transport, notes), so every trip can be read day by day.
+Flight search through SerpApi (Google Flights) is used **occasionally**, to find a flight and attach it to a trip, not as the core product.
+Later, an agent keeps a running **trip log ("minutes")** of where you are and what you're doing.
 
-## Phase 1 — Project Structure & Scope  [IN PROGRESS]
-- [x] F1.1 Identify and set up the tools, skills, and processes necessary for the project.
-  uv + Python 3.13 package in `backend/`, ruff/mypy/pytest, pre-commit, GitHub Actions CI, Claude allowlist + `/finish-feature` skill.
-  Follow-ups: Claude-managed root `.gitignore`; Python 3.13 set as user-wide default via uv.
-- [ ] F1.2 Fare data source research. Find candidate flight-price APIs and test the best one or two, as we did with OpenSky. Questions to answer:
-  - Search: given origin, destination, and dates (one-way and return), what comes back? Price, currency, airline, flight numbers, departure/arrival times, stops, duration, cabin, baggage.
-  - Airport lookup: can it search airports by name or city (for the search box)?
-  - Freshness: are prices live or cached, and how much do they drift from airline sites?
-  - Access and cost: sign-up, free tier, rate limits, price per search, test vs. production data.
-  - Terms: can we show prices in a public app? Booking links or affiliate requirements?
-  Output: a research folder with scripts, raw responses, CSV data, and a findings README with a verdict.
+Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Duffel) were removed on 2026-10-21. Their research and code can be recovered from commit `2580a78`.
 
-## Phase 2 — Initialize & Test Backend  [NOT STARTED]
-- [ ] F2.1 TBD (fare search backend, scoped after F1.2)
+## Phase 1 — Foundation & Design  [IN PROGRESS]
+- [x] F1.1 Tooling: uv + Python 3.13 package in `backend/`, ruff/mypy/pytest, pre-commit, GitHub Actions CI, Claude allowlist + `/finish-feature` skill.
+- [ ] F1.2 Trip domain model & data design. Define the entities and how they relate: Trip, Day, Item nodes (Flight, Stay, Activity, Transport, Note), and LogEntry for the minutes. Cover:
+  - Items that span days (a 4-night stay, an overnight flight) and time zones (store UTC + the local zone).
+  - Past vs upcoming trips, and planned vs actual (what was booked vs what happened).
+  - Choice of database + ORM + migrations (proposal: SQLite to start, Postgres-ready; SQLAlchemy 2.0; Alembic).
+  - Output: `docs/ARCHITECTURE.md` with an entity diagram, decisions, and the first API resource list.
+- [ ] F1.3 SerpApi flight lookup spike. A few real searches (free tier: 250/mo). How one result maps onto a Flight item; budget rules (on-demand only, cache results). Research only, no backend code.
+- [ ] F1.4 Agentic trip log research. Which signals can feed the minutes (manual check-ins, phone location, calendar, booking emails, photos); how an LLM agent turns them into a daily log; privacy and consent. Research only.
 
-## Phase 3 — Web Frontend Development  [NOT STARTED]
-- [ ] F3.1 TBD (search airports, pick dates, show priced flights)
+## Phase 2 — Backend Core  [NOT STARTED]
+- [ ] F2.1 Database, models, and migrations (from F1.2).
+- [ ] F2.2 Trip API: create/read/update/delete trips, days, and items.
+- [ ] F2.3 Day-by-day timeline endpoint (a trip's items grouped per local day).
+- [ ] F2.4 Flight search & attach: SerpApi adapter behind a provider interface, cached.
 
-## Phase 4 — Live Flight Tracking  [PARKED]
-Done earlier, before the product focus changed. Kept for later; not being built now.
-- [x] F4.1 OpenSky API research (was F1.2). Verdict: viable for tracking with a free account, backend polling/caching, and adsbdb for routes. See `OpenSky API Testing/`.
-- [x] F4.2 Tracking architecture & typed stubs (was F1.3). Design kept in `docs/TRACKING_ARCHITECTURE.md`. The stub code was removed for a clean fare-focused backend; it's recoverable from commit `3459315`.
-  Open: OpenSky account/credentials not set up; authenticated behaviour unverified.
+## Phase 3 — Web Frontend  [NOT STARTED]
+- [ ] F3.1 TBD: trip list, trip timeline view, add/edit items.
+
+## Phase 4 — Agentic Trip Log  [NOT STARTED]
+- [ ] F4.1 TBD (scoped after F1.4).
+
+## Phase 5 — iOS  [LATER]
+- [ ] F5.1 TBD: SwiftUI or wrapped web app on the same API.

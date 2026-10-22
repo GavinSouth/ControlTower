@@ -1,4 +1,4 @@
-"""ControlTower backend: live flight tracking."""
+"""ControlTower backend: trip tracking API and data."""
 
 __version__ = "0.1.0"
 

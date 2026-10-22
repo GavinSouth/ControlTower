@@ -1,10 +1,10 @@
 # Project: ControlTower
 
 ## Purpose
-This repo / app contains the first iteration of a system that:
-1. lets a user pick two airports and travel dates, then returns a list of flights with current prices so they can compare fares.
-
-Later: live flight tracking (parked, ROADMAP Phase 4).
+ControlTower is a trip tracking app and system:
+1. Records past and upcoming trips in a backend database, organized as nodes: Trip → Days → Items (flights, stays, activities, transport, notes), so each trip breaks down day by day.
+2. Looks up flights occasionally via SerpApi (Google Flights) and attaches them to a trip. Searches are on demand and cached, never a core loop (free tier: 250/mo).
+3. Later: an agent tracks where the traveller is and what they're doing, and keeps a running trip log ("minutes").
 
 (Scope will increase in time)
 
@@ -12,14 +12,15 @@ Later: live flight tracking (parked, ROADMAP Phase 4).
 Backend:
 - Python 3.13, managed by **uv** (deps + interpreter; lockfile `backend/uv.lock`)
 - **ruff** (lint + format), **mypy** (strict, `src/`), **pytest**, **pre-commit**
-- Data source: flight-fare API, TBD in F1.2 (credentials in `.env`, see `.env.example`). OpenSky Network was researched for tracking (parked).
+- Database: TBD in F1.2 (proposal: SQLite → Postgres-ready, SQLAlchemy 2.0, Alembic)
+- Flight lookup: SerpApi Google Flights (`SERPAPI_API_KEY` in `.env`, see `.env.example`)
 
 Frontend:
 - Web first (Phase 3), iOS later (SwiftUI or wrapped web app). Python backend exposes an HTTP API that both consume.
 
 ## Layout
 - `backend/` — Python package (`src/controltower/`), tests (`tests/`), `pyproject.toml` (tool config)
-- `docs/` — `HISTORY_Px<phase>.md` per phase; `TRACKING_ARCHITECTURE.md` (parked design)
+- `docs/` — `HISTORY_P<phase>.md` context log per phase; `ARCHITECTURE.md` (from F1.2); `python_research.md` (user's tooling notes)
 - `.github/workflows/ci.yml` — CI: lint, format, types, tests on push/PR
 - `.claude/` — project settings (permission allowlist) and skills (`/finish-feature`)
 - `web/`, `ios/` — future frontends

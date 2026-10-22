@@ -1,7 +1,7 @@
 [project]
 name = "controltower"
 version = "0.1.0"
-description = "Backend for ControlTower: live flight tracking API and data logic."
+description = "Backend for ControlTower: trip tracking API, database, and flight lookup."
 readme = "README.md"
 authors = [
     { name = "Gavin South", email = "gavinsouth@msn.com" }
