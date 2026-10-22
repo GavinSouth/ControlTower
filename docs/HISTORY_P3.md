@@ -121,7 +121,7 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
     - the F3.4 API (`/reflection`, `/feedback`, `/stats`, `/favourites`) and web plan.
 - Decisions:
   - **Reflection and feedback are separate tables keyed (trip/item, user)**, not trip/item columns. Opinions are per person, so Phase 6 shared trips need no reshaping.
-  - **Trip rating stays 1–5** while items use thumbs. Trips are rated once, so the finer scale is worth it (and the ROADMAP query "trips I rated 5" uses it). Easy to flip before F3.4 if you'd rather thumbs everywhere.
+  - **Trip rating stays 1–5** while items use thumbs. Trips are rated once, so the finer scale is worth it (and the ROADMAP query "trips I rated 5" uses it). **Confirmed by the user** after the spike.
   - **`skipped` status counts as a negative signal** with no user input.
   - **Tags are a JSON list** (lower-cased), filtered in Python at this scale. A `trip_tag` table is the upgrade path.
   - **Stats are computed** by a pure `trip_stats()`, never stored:
@@ -130,4 +130,4 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
     - season comes from the middle date, with a southern-hemisphere flip.
   - **F4.3 gets a backend-built "taste profile"**; the agent never queries the DB directly.
 - Verified: backend ruff/mypy/pytest clean (51 passed). The mockup is static and wasn't rendered in a browser here.
-- Next: **user reviews the mockup + ARCHITECTURE section**. Then **F3.4** builds it. Open question: is a 1–5 trip rating alongside item thumbs OK?
+- Next: **user reviews the mockup + ARCHITECTURE section**. Then **F3.4** builds it.
