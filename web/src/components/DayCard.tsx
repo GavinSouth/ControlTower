@@ -1,4 +1,4 @@
-import type { Day, Item } from '../api/types'
+import type { Day, Item, LogEntry } from '../api/types'
 import { ICONS, plannedNote, subtitle, whenLabel } from '../lib/listing'
 import { formatDay, formatTime } from '../lib/time'
 
@@ -10,11 +10,17 @@ export function DayCard({
   homeTz,
   placeName,
   onSelect,
+  onEditDay,
+  onSelectLog,
+  onAddLog,
 }: {
   day: Day
   homeTz: string
   placeName: (id: string | null) => string | null
   onSelect: (item: Item) => void
+  onEditDay: (day: Day) => void
+  onSelectLog: (entry: LogEntry) => void
+  onAddLog: (day: Day) => void
 }) {
   return (
     <section aria-label={`Day ${day.number}`} className="rounded-xl border border-stone-200 bg-white">
@@ -24,9 +30,19 @@ export function DayCard({
         {(day.title || day.city) && (
           <span className="truncate text-sm text-stone-500">{[day.title, day.city].filter(Boolean).join(' · ')}</span>
         )}
+        <button
+          type="button"
+          onClick={() => onEditDay(day)}
+          className="ml-auto shrink-0 text-xs text-stone-400 hover:text-teal-700"
+          aria-label={`Edit day ${day.number}`}
+        >
+          Edit day
+        </button>
       </header>
 
-      {day.items.length === 0 && day.log.length === 0 && (
+      {day.summary && <p className="border-b border-stone-100 px-4 py-2 text-sm whitespace-pre-line text-stone-600">{day.summary}</p>}
+
+      {day.items.length === 0 && (
         <p className="px-4 py-3 text-sm text-stone-400">Nothing planned.</p>
       )}
 
@@ -63,19 +79,26 @@ export function DayCard({
         })}
       </ul>
 
-      {day.log.length > 0 && (
-        <ul className="space-y-1 border-t border-dashed border-stone-200 px-4 py-3 text-sm text-stone-600">
-          {day.log.map((entry) => (
-            <li key={entry.id} className="flex gap-3">
-              <span className="w-28 shrink-0 text-stone-400 tabular-nums">{formatTime(entry.occurred_at, entry.tz, homeTz)}</span>
-              <span>
-                <span className="text-xs tracking-wide text-stone-400 uppercase">{entry.kind.replace('_', ' ')}</span>{' '}
-                {entry.text}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="border-t border-dashed border-stone-200 px-4 py-2 text-sm text-stone-600">
+        {day.log.length > 0 && (
+          <ul className="space-y-0.5 pb-1">
+            {day.log.map((entry) => (
+              <li key={entry.id}>
+                <button type="button" onClick={() => onSelectLog(entry)} className="flex w-full gap-3 rounded py-0.5 text-left hover:bg-stone-50">
+                  <span className="w-28 shrink-0 text-stone-400 tabular-nums">{formatTime(entry.occurred_at, entry.tz, homeTz)}</span>
+                  <span>
+                    <span className="text-xs tracking-wide text-stone-400 uppercase">{entry.kind.replace('_', ' ')}</span>{' '}
+                    {entry.text}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button type="button" onClick={() => onAddLog(day)} className="text-xs text-teal-700 hover:underline">
+          + Log entry
+        </button>
+      </div>
     </section>
   )
 }

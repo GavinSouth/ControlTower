@@ -54,6 +54,39 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
 - Asked: jot down features before restarting the session.
   1. **Trip location**: more user-entered fields on a new trip, starting with a location at any level of detail ("Shinjuku, Japan" or "Japan"). Added to ROADMAP F3.2 with the implementation outline (DB column + migration, API, regenerated types, TripForm, shown on cards and header). Open question: free text vs also a country code.
 
+### F3.2 — Trip details & polish complete
+- Asked: resume. Confirmed scope first: all four parts (trip location, day extras editing, log entry editing, places page); no other review feedback.
+- On location storage the user answered with a direction rather than a choice: *"I just want the whole project to have an agentic process… it'll look at the location and time of year and do some recommendation processes."* So:
+  - Location is **free text** (an LLM reads "Shinjuku, Japan" as-is; geocoding is a later research question).
+  - Added **F4.3 Recommendations agent** to ROADMAP. Phase 4 was renamed *Agentic Trip Log & Recommendations*, with a line on the app-wide agentic goal.
+- Done:
+  - **Backend:**
+    - `Trip.location` (String 200, nullable) + migration `19b2f4c23aa1_trip_location.py`.
+    - `location` on TripCreate/Patch/Read.
+    - New `LogEntryPatch` + `PATCH /log/{id}`. The item check is shared with create (`require_trip_item`), so an entry can only point at an item on its own trip.
+    - The demo trip has a location.
+    - 2 new tests (location; log patch incl. 404/422 cases) → **51 passed**.
+  - **Web:**
+    - **Types and hooks:** new aliases (`DayWrite`, `LogEntryCreate/Patch`, `PlacePatch`, `LogKind`) and hooks (`useSaveDay`, `useCreate/Update/DeleteLogEntry`, `useUpdate/DeletePlace`). Place changes invalidate places and trips.
+    - **Trip location:** a TripForm field, shown as 📍 on trip cards and the trip header.
+    - **DayCard:** "Edit day" button, summary shown, clickable log entries, "+ Log entry" → `DayForm` / `LogForm` dialogs in `TripPage`.
+    - **Pure, tested form logic:** `lib/logForm.ts` and `lib/placeForm.ts`.
+    - **Places page:** `PlacesPage` (`/places`, search, add, edit, delete) + `PlaceForm`. Header nav (Trips / Places).
+    - Tests: **28 passed** (+9).
+  - **Docs:** ARCHITECTURE (TRIP.location, PATCH /log, web notes), README, web/README.
+- Decisions:
+  - **Free-text location** (see above). A country code can be added later as a nullable column without reshaping.
+  - **Log form time default:** now if the day is today in the trip's zone (logging live), else 12:00.
+  - **Log "About" picker** lists every trip item once (a multi-day stay appears on several days, so items are deduped by id).
+  - **The UI sends `source: 'manual'` explicitly:** generated create types mark defaulted fields as required, and it documents intent (agents will use other sources).
+  - **Day extras use the existing PUT** (replace all; blanks clear). An all-blank save leaves an empty row, which is harmless.
+- Verified:
+  - Backend ruff/mypy/pytest clean.
+  - Web oxlint/tsc/Vitest clean; build 399 kB JS / 123 kB gzip.
+  - Scratch DB: migration up → down → up, then demo seed, `PATCH /log`, and `PUT /days`, all reflected in the timeline.
+  - Ran `alembic upgrade head` on the real local DB (adds the nullable column; data untouched).
+  - Not verified in a real browser (no automation here).
+
 ### Next
-- **User review of the running app** → feedback becomes **F3.2** (also planned: editing for day extras and log entries, a places page).
-- Then Phase 4 (F4.1 agentic trip log research).
+- **User review of F3.2 in the browser.** The existing "Japan (demo)" was seeded before location existed, so add one via Edit trip.
+- Phase 4: **F4.1** agentic trip log research. **F4.3** recommendations research can be paired with it, since both need the LLM/agent choice.

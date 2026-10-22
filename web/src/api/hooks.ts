@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, unwrap } from './client'
-import type { ItemCreate, ItemPatch, PlaceCreate, TripCreate, TripPatch } from './types'
+import type {
+  DayWrite,
+  ItemCreate,
+  ItemPatch,
+  LogEntryCreate,
+  LogEntryPatch,
+  PlaceCreate,
+  PlacePatch,
+  TripCreate,
+  TripPatch,
+} from './types'
 
 // Query keys: one place, so mutations invalidate exactly what they change.
 export const keys = {
@@ -101,10 +111,80 @@ export function useDeleteItem() {
   })
 }
 
+/** A day's extras: PUT replaces them all, so blank fields clear. */
+export function useSaveDay(tripId: string) {
+  const invalidate = useInvalidateTrips()
+  return useMutation({
+    mutationFn: async ({ date, body }: { date: string; body: DayWrite }) =>
+      unwrap(
+        await api.PUT('/trips/{trip_id}/days/{local_date}', {
+          params: { path: { trip_id: tripId, local_date: date } },
+          body,
+        }),
+      ),
+    onSuccess: invalidate,
+  })
+}
+
+export function useCreateLogEntry(tripId: string) {
+  const invalidate = useInvalidateTrips()
+  return useMutation({
+    mutationFn: async (body: LogEntryCreate) =>
+      unwrap(await api.POST('/trips/{trip_id}/log', { params: { path: { trip_id: tripId } }, body })),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUpdateLogEntry() {
+  const invalidate = useInvalidateTrips()
+  return useMutation({
+    mutationFn: async ({ entryId, body }: { entryId: string; body: LogEntryPatch }) =>
+      unwrap(await api.PATCH('/log/{entry_id}', { params: { path: { entry_id: entryId } }, body })),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeleteLogEntry() {
+  const invalidate = useInvalidateTrips()
+  return useMutation({
+    mutationFn: async (entryId: string) =>
+      unwrap(await api.DELETE('/log/{entry_id}', { params: { path: { entry_id: entryId } } })),
+    onSuccess: invalidate,
+  })
+}
+
+/** Place changes show up in every trip (names, zones), so refresh places and trips. */
+function useInvalidatePlaces() {
+  const client = useQueryClient()
+  return () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: ['places'] }),
+      client.invalidateQueries({ queryKey: keys.trips }),
+    ])
+}
+
 export function useCreatePlace() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: async (body: PlaceCreate) => unwrap(await api.POST('/places', { body })),
     onSuccess: () => client.invalidateQueries({ queryKey: ['places'] }),
+  })
+}
+
+export function useUpdatePlace() {
+  const invalidate = useInvalidatePlaces()
+  return useMutation({
+    mutationFn: async ({ placeId, body }: { placeId: string; body: PlacePatch }) =>
+      unwrap(await api.PATCH('/places/{place_id}', { params: { path: { place_id: placeId } }, body })),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeletePlace() {
+  const invalidate = useInvalidatePlaces()
+  return useMutation({
+    mutationFn: async (placeId: string) =>
+      unwrap(await api.DELETE('/places/{place_id}', { params: { path: { place_id: placeId } } })),
+    onSuccess: invalidate,
   })
 }

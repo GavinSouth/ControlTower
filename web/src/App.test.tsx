@@ -8,6 +8,7 @@ import type { Timeline, Trip } from './api/types'
 const trip = (overrides: Partial<Trip>): Trip => ({
   id: 't1',
   title: 'Japan',
+  location: null,
   start_date: null,
   end_date: null,
   first_day: '2027-04-05',
@@ -21,7 +22,7 @@ const trip = (overrides: Partial<Trip>): Trip => ({
   ...overrides,
 })
 
-const japan = trip({})
+const japan = trip({ location: 'Shinjuku, Japan' })
 const lisbon = trip({ id: 't2', title: 'Lisbon', first_day: '2025-05-01', last_day: '2025-05-04', phase: 'past' })
 
 const timeline: Timeline = {
@@ -81,6 +82,7 @@ describe('App', () => {
     const upcoming = await screen.findByRole('region', { name: 'Upcoming' })
     expect(within(upcoming).getByText('Japan')).toBeInTheDocument()
     expect(within(upcoming).getByText('5 – 8 Apr 2027')).toBeInTheDocument()
+    expect(within(upcoming).getByText('📍 Shinjuku, Japan')).toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: 'Past trips' })).getByText('Lisbon')).toBeInTheDocument()
   })
 
@@ -108,5 +110,22 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Kyoto' })).toBeInTheDocument()
     const post = requests.find((r) => r.method === 'POST')
     expect(post?.body).toMatchObject({ title: 'Kyoto', start_date: null })
+  })
+
+  it('lists places and edits one', async () => {
+    const haneda = { id: 'p1', name: 'Haneda', address: null, city: 'Tokyo', country: 'JP', lat: null, lon: null, tz: 'Asia/Tokyo', iata_code: 'HND' }
+    const requests = fakeApi({ '/places': [haneda], 'PATCH /places/p1': { ...haneda, city: 'Ōta, Tokyo' }, '/trips': [] })
+    renderApp('/places')
+    await userEvent.click(await screen.findByText('Haneda'))
+    const city = screen.getByLabelText('City')
+    await userEvent.clear(city)
+    await userEvent.type(city, 'Ōta, Tokyo')
+    await userEvent.click(screen.getByText('Save'))
+
+    await vi.waitFor(() => expect(requests.some((r) => r.method === 'PATCH')).toBe(true))
+    expect(requests.find((r) => r.method === 'PATCH')).toMatchObject({
+      path: '/places/p1',
+      body: { name: 'Haneda', city: 'Ōta, Tokyo', country: 'JP', iata_code: 'HND', lat: null },
+    })
   })
 })

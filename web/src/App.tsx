@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { createBrowserRouter, Link, Outlet, RouterProvider } from 'react-router'
+import { createBrowserRouter, Link, NavLink, Outlet, RouterProvider } from 'react-router'
+import { PlacesPage } from './pages/PlacesPage'
 import { TripPage } from './pages/TripPage'
 import { TripsPage } from './pages/TripsPage'
 
@@ -12,6 +13,21 @@ function Layout() {
             <img src="/favicon.svg" alt="" className="h-6 w-6" />
             ControlTower
           </Link>
+          <nav className="ml-auto flex gap-4 text-sm">
+            {[
+              { to: '/', label: 'Trips' },
+              { to: '/places', label: 'Places' },
+            ].map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) => (isActive ? 'font-medium text-teal-700' : 'text-stone-600 hover:text-stone-900')}
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-4 py-8">
@@ -38,6 +54,7 @@ const routes = [
     children: [
       { path: '/', element: <TripsPage /> },
       { path: '/trips/:tripId', element: <TripPage /> },
+      { path: '/places', element: <PlacesPage /> },
       { path: '*', element: <NotFound /> },
     ],
   },

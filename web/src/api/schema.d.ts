@@ -232,7 +232,11 @@ export interface paths {
         delete: operations["delete_log_entry_log__entry_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update Log Entry
+         * @description Change only the fields sent; send null to clear an optional one.
+         */
+        patch: operations["update_log_entry_log__entry_id__patch"];
         trace?: never;
     };
     "/health": {
@@ -723,6 +727,25 @@ export interface components {
             raw?: {
                 [key: string]: unknown;
             } | null;
+        };
+        /** LogEntryPatch */
+        LogEntryPatch: {
+            /** Occurred At */
+            occurred_at?: string | null;
+            /** Tz */
+            tz?: string | null;
+            source?: components["schemas"]["LogSource"] | null;
+            kind?: components["schemas"]["LogKind"] | null;
+            /** Text */
+            text?: string | null;
+            /** Item Id */
+            item_id?: string | null;
+            /** Place Id */
+            place_id?: string | null;
+            /** Lat */
+            lat?: number | null;
+            /** Lon */
+            lon?: number | null;
         };
         /** LogEntryRead */
         LogEntryRead: {
@@ -1403,6 +1426,8 @@ export interface components {
         TripCreate: {
             /** Title */
             title: string;
+            /** Location */
+            location?: string | null;
             /** Start Date */
             start_date?: string | null;
             /** End Date */
@@ -1442,6 +1467,8 @@ export interface components {
         TripPatch: {
             /** Title */
             title?: string | null;
+            /** Location */
+            location?: string | null;
             /** Start Date */
             start_date?: string | null;
             /** End Date */
@@ -1467,6 +1494,11 @@ export interface components {
             id: string;
             /** Title */
             title: string;
+            /**
+             * Location
+             * @description Free-text destination, e.g. 'Shinjuku, Japan'
+             */
+            location: string | null;
             /**
              * Start Date
              * @description Stored start date, if set
@@ -2218,6 +2250,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_log_entry_log__entry_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogEntryPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogEntryRead"];
+                };
             };
             /** @description Validation Error */
             422: {

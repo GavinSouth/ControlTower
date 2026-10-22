@@ -40,6 +40,7 @@ UTCDatetime = Annotated[AwareDatetime, AfterValidator(lambda v: v.astimezone(UTC
 TimeZone = Annotated[str, AfterValidator(_check_tz), Field(examples=["Asia/Tokyo"])]
 Currency = Annotated[str, Field(pattern=r"^[A-Z]{3}$", examples=["USD"])]
 Title = Annotated[str, Field(min_length=1, max_length=200)]
+Location = Annotated[str, Field(max_length=200, examples=["Shinjuku, Japan"])]
 
 
 class Schema(BaseModel):
@@ -72,6 +73,7 @@ class TripPatch(PatchSchema):
     NOT_NULL = frozenset({"title", "home_tz", "cancelled"})
 
     title: Title | None = None
+    location: Location | None = None
     start_date: date | None = None
     end_date: date | None = None
     home_tz: TimeZone | None = None
@@ -81,6 +83,7 @@ class TripPatch(PatchSchema):
 
 class TripCreate(Schema):
     title: Title
+    location: Location | None = None
     start_date: date | None = None
     end_date: date | None = None
     home_tz: TimeZone
@@ -90,6 +93,7 @@ class TripCreate(Schema):
 class TripRead(ReadSchema):
     id: UUID
     title: str
+    location: str | None = Field(description="Free-text destination, e.g. 'Shinjuku, Japan'")
     start_date: date | None = Field(description="Stored start date, if set")
     end_date: date | None = Field(description="Stored end date, if set")
     first_day: date | None = Field(description="Effective first day (stored or from items)")
@@ -333,6 +337,20 @@ class LogEntryCreate(Schema):
     lat: float | None = Field(None, ge=-90, le=90)
     lon: float | None = Field(None, ge=-180, le=180)
     raw: dict[str, Any] | None = None
+
+
+class LogEntryPatch(PatchSchema):
+    NOT_NULL = frozenset({"occurred_at", "tz", "source", "kind"})
+
+    occurred_at: UTCDatetime | None = None
+    tz: TimeZone | None = None
+    source: LogSource | None = None
+    kind: LogKind | None = None
+    text: str | None = None
+    item_id: UUID | None = None
+    place_id: UUID | None = None
+    lat: float | None = Field(None, ge=-90, le=90)
+    lon: float | None = Field(None, ge=-180, le=180)
 
 
 class LogEntryRead(ReadSchema):

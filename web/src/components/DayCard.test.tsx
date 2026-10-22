@@ -68,7 +68,7 @@ const day: Day = {
   number: 2,
   title: 'Arrival',
   city: 'Tokyo',
-  summary: null,
+  summary: 'Long travel day.',
   items: [
     { role: 'ends', item: flight },
     { role: 'starts', item: stay },
@@ -94,9 +94,10 @@ const day: Day = {
 
 const places: Record<string, string> = { sfo: 'SFO', hnd: 'Haneda' }
 
-function renderDay(onSelect = vi.fn()) {
-  render(<DayCard day={day} homeTz="Asia/Tokyo" placeName={(id) => (id ? places[id] : null)} onSelect={onSelect} />)
-  return onSelect
+function renderDay() {
+  const handlers = { onSelect: vi.fn(), onEditDay: vi.fn(), onSelectLog: vi.fn(), onAddLog: vi.fn() }
+  render(<DayCard day={day} homeTz="Asia/Tokyo" placeName={(id) => (id ? places[id] : null)} {...handlers} />)
+  return handlers
 }
 
 describe('DayCard', () => {
@@ -105,6 +106,7 @@ describe('DayCard', () => {
     const card = screen.getByRole('region', { name: 'Day 2' })
     expect(within(card).getByText('Tue 6 Apr')).toBeInTheDocument()
     expect(within(card).getByText('Arrival · Tokyo')).toBeInTheDocument()
+    expect(within(card).getByText('Long travel day.')).toBeInTheDocument()
     // The flight ends today: its arrival, in Tokyo time (the trip's zone, so no zone name).
     expect(within(card).getByText('until 15:25')).toBeInTheDocument()
     expect(within(card).getByText('UA 837 · SFO → Haneda')).toBeInTheDocument()
@@ -119,8 +121,18 @@ describe('DayCard', () => {
   })
 
   it('opens an item when clicked', async () => {
-    const onSelect = renderDay()
+    const { onSelect } = renderDay()
     await userEvent.click(screen.getByText('UA 837'))
     expect(onSelect).toHaveBeenCalledWith(flight)
+  })
+
+  it('opens the day extras and log entries for editing', async () => {
+    const { onEditDay, onSelectLog, onAddLog } = renderDay()
+    await userEvent.click(screen.getByRole('button', { name: 'Edit day 2' }))
+    expect(onEditDay).toHaveBeenCalledWith(day)
+    await userEvent.click(screen.getByText('Room is great'))
+    expect(onSelectLog).toHaveBeenCalledWith(day.log[0])
+    await userEvent.click(screen.getByText('+ Log entry'))
+    expect(onAddLog).toHaveBeenCalledWith(day)
   })
 })

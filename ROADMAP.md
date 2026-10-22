@@ -19,15 +19,18 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
 - [x] F2.2 Trip API: create/read/update/delete trips, days, and items. FastAPI app in `backend/src/controltower/api/` (trips, items, places, day extras, log); interactive docs at `localhost:8000/docs`; 34 tests.
 - [x] F2.3 Day-by-day timeline endpoint (a trip's items grouped per local day). `GET /trips/{id}/timeline` built on the pure `build_timeline()`; 47 tests.
 
-## Phase 3 — Web Frontend  [IN PROGRESS]
+## Phase 3 — Web Frontend  [DONE]
 - [x] F3.1 Trip list, trip timeline view, add/edit items. **First reviewable local web app.** React + TypeScript + Vite + Tailwind in `web/`; types generated from the API's OpenAPI schema; demo trip seeder; CI web job.
-- [ ] F3.2 Trip details & polish from the F3.1 review:
-  - **Trip location** (user request): an optional destination field when creating or editing a trip, at any level of detail, e.g. "Shinjuku, Japan" or just "Japan". It shows on trip cards and the trip header. Needs a new `trip` column + Alembic migration, API and schema updates, `npm run gen:api`, and the TripForm field. Open: free text only, or also store a country code for filtering and maps later.
-  - Editing for day extras and log entries; a places page.
+- [x] F3.2 Trip details & polish from the F3.1 review:
+  - **Trip location** (user request): an optional destination field when creating or editing a trip, at any level of detail, e.g. "Shinjuku, Japan" or just "Japan". It shows on trip cards and the trip header. Needs a new `trip` column + Alembic migration, API and schema updates, `npm run gen:api`, and the TripForm field. Decided: **free text** (an LLM reads it as-is; any geocoding is decided in F4.1/F4.3).
+  - Editing for day extras (title, city, summary) and log entries (add/edit/delete, new `PATCH /log/{id}`).
+  - A places page: list, search, add, edit, delete saved places.
 
-## Phase 4 — Agentic Trip Log  [NOT STARTED]
+## Phase 4 — Agentic Trip Log & Recommendations  [NOT STARTED]
+The goal is an agentic process across the whole app: agents read the trip data (location, dates, items, log) and act on it.
 - [ ] F4.1 Agentic trip log research. Which signals can feed the minutes (manual check-ins, phone location, calendar, booking emails, photos); how an LLM agent turns them into a daily log; privacy and consent. Research only. (Moved from F1.3 so the web app comes first; the `log_entry` table already exists in the design.)
 - [ ] F4.2 TBD: build the trip log (scoped after F4.1).
+- [ ] F4.3 Recommendations agent (user request, 2026-10-21): an agent looks at a trip's location and time of year (plus what's already planned) and suggests activities, stays, and practical notes (weather, seasonal events, closures), which can be added as `idea` items. Research first: LLM choice, which data sources ground it (weather/climate, events, places), and whether trip location needs geocoding.
 
 ## Phase 5 — iOS  [LATER]
 - [ ] F5.1 TBD: SwiftUI or wrapped web app on the same API.

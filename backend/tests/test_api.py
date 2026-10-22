@@ -35,6 +35,16 @@ def test_trip_crud(client: TestClient) -> None:
     assert client.get(url).status_code == 404
 
 
+def test_trip_location_is_optional_free_text(client: TestClient) -> None:
+    assert new_trip(client)["location"] is None
+    trip = new_trip(client, location="Shinjuku, Japan")
+    assert trip["location"] == "Shinjuku, Japan"
+    url = f"/trips/{trip['id']}"
+    assert client.patch(url, json={"location": "Japan"}).json()["location"] == "Japan"
+    assert client.patch(url, json={"location": None}).json()["location"] is None
+    assert client.patch(url, json={"location": "x" * 201}).status_code == 422
+
+
 def test_trips_listed_soonest_first_and_filtered_by_phase(client: TestClient) -> None:
     new_trip(client, title="Later", start_date="2099-06-01", end_date="2099-06-05")
     new_trip(client, title="Sooner", start_date="2099-01-01", end_date="2099-01-05")
@@ -265,3 +275,28 @@ def test_docs_and_health(client: TestClient) -> None:
     assert client.get("/docs").status_code == 200
     paths = client.get("/openapi.json").json()["paths"]
     assert {"/trips", "/trips/{trip_id}/items", "/items/{item_id}", "/places"} <= set(paths)
+
+
+def test_log_entry_patch(client: TestClient) -> None:
+    trip = new_trip(client)
+    other = new_trip(client, title="Other")
+    stay = create(client, f"/trips/{trip['id']}/items", {"kind": "stay", "title": "Hotel X"})
+    elsewhere = create(client, f"/trips/{other['id']}/items", {"kind": "note", "title": "n"})
+    entry = create(
+        client,
+        f"/trips/{trip['id']}/log",
+        {"occurred_at": "2027-04-06T20:00:00+09:00", "tz": "Asia/Tokyo", "kind": "note"},
+    )
+    url = f"/log/{entry['id']}"
+
+    patched = client.patch(url, json={"text": "ramen", "kind": "check_in", "item_id": stay["id"]})
+    assert patched.status_code == 200, patched.text
+    body = patched.json()
+    assert (body["text"], body["kind"], body["item_id"]) == ("ramen", "check_in", stay["id"])
+    assert body["occurred_at"] == "2027-04-06T11:00:00Z"  # untouched fields are kept
+
+    assert client.patch(url, json={"item_id": None}).json()["item_id"] is None
+    assert client.patch(url, json={"item_id": elsewhere["id"]}).status_code == 422
+    assert client.patch(url, json={"kind": None}).status_code == 422
+    assert client.patch(url, json={"tz": "Mars/Base"}).status_code == 422
+    assert client.patch("/log/00000000-0000-0000-0000-000000000000", json={}).status_code == 404

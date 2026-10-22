@@ -1,15 +1,32 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { usePlaces, useTimeline, useTrip } from '../api/hooks'
-import type { Item } from '../api/types'
+import type { Day, Item, LogEntry, Timeline } from '../api/types'
 import { DayCard } from '../components/DayCard'
+import { DayForm } from '../components/DayForm'
 import { ItemForm } from '../components/ItemForm'
+import { LogForm } from '../components/LogForm'
 import { TripForm } from '../components/TripForm'
 import { Badge, Button, Dialog, ErrorText } from '../components/ui'
 import { KINDS } from '../lib/itemForm'
 import { formatRange } from '../lib/time'
 
-type Editing = { type: 'trip' } | { type: 'new-item' } | { type: 'item'; item: Item } | null
+type Editing =
+  | { type: 'trip' }
+  | { type: 'new-item' }
+  | { type: 'item'; item: Item }
+  | { type: 'day'; day: Day }
+  | { type: 'new-log'; day: Day }
+  | { type: 'log'; entry: LogEntry; day: Day }
+  | null
+
+/** Every item on the trip once (a multi-day stay is listed on each of its days). */
+function tripItems(t: Timeline): Item[] {
+  const byId = new Map<string, Item>()
+  for (const day of t.days) for (const { item } of day.items) byId.set(item.id, item)
+  for (const item of t.unscheduled) byId.set(item.id, item)
+  return [...byId.values()]
+}
 
 export function TripPage() {
   const { tripId = '' } = useParams()
@@ -45,6 +62,7 @@ export function TripPage() {
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">{trip.data.title}</h1>
+            {trip.data.location && <p className="mt-1 text-stone-700">📍 {trip.data.location}</p>}
             <p className="mt-1 flex items-center gap-2 text-sm text-stone-500">
               <span>{formatRange(t.first_day, t.last_day) || 'No dates yet'}</span>
               <Badge tone={t.phase}>{trip.data.cancelled ? 'cancelled' : t.phase}</Badge>
@@ -76,6 +94,9 @@ export function TripPage() {
             homeTz={homeTz}
             placeName={placeName}
             onSelect={(item) => setEditing({ type: 'item', item })}
+            onEditDay={(d) => setEditing({ type: 'day', day: d })}
+            onSelectLog={(entry) => setEditing({ type: 'log', entry, day })}
+            onAddLog={(d) => setEditing({ type: 'new-log', day: d })}
           />
         ))}
       </div>
@@ -109,6 +130,22 @@ export function TripPage() {
       <Dialog open={editing?.type === 'item'} onClose={close} title="Edit item">
         {editing?.type === 'item' && (
           <ItemForm key={editing.item.id} tripId={tripId} homeTz={homeTz} item={editing.item} onDone={close} />
+        )}
+      </Dialog>
+      <Dialog open={editing?.type === 'day'} onClose={close} title="Edit day">
+        {editing?.type === 'day' && <DayForm key={editing.day.local_date} tripId={tripId} day={editing.day} onDone={close} />}
+      </Dialog>
+      <Dialog open={editing?.type === 'new-log' || editing?.type === 'log'} onClose={close} title="Log entry">
+        {(editing?.type === 'new-log' || editing?.type === 'log') && (
+          <LogForm
+            key={editing.type === 'log' ? editing.entry.id : `new-${editing.day.local_date}`}
+            tripId={tripId}
+            day={editing.day.local_date}
+            homeTz={homeTz}
+            items={tripItems(t)}
+            entry={editing.type === 'log' ? editing.entry : undefined}
+            onDone={close}
+          />
         )}
       </Dialog>
     </div>

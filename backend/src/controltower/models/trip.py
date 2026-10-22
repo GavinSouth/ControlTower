@@ -27,6 +27,8 @@ class Trip(UUIDPrimaryKey, Timestamps, Base):
 
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"), index=True)
     title: Mapped[str] = mapped_column(String(200))
+    # Free text at any level of detail ("Shinjuku, Japan", "Japan"); agents read it later.
+    location: Mapped[str | None] = mapped_column(String(200))
     # Optional: when unset, the timeline computes the range from the items.
     start_date: Mapped[date | None]
     end_date: Mapped[date | None]

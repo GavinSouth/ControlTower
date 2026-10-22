@@ -48,7 +48,13 @@ def create_demo_trip(session: Session) -> Trip | None:
     hotel = Place(name="Hotel Gracery Shinjuku", city="Tokyo", country="JP", tz="Asia/Tokyo")
     market = Place(name="Tsukiji Outer Market", city="Tokyo", country="JP", tz="Asia/Tokyo")
 
-    trip = Trip(owner=owner, title=DEMO_TITLE, home_tz="Asia/Tokyo", notes="Cherry blossom week.")
+    trip = Trip(
+        owner=owner,
+        title=DEMO_TITLE,
+        location="Tokyo & Kyoto, Japan",
+        home_tz="Asia/Tokyo",
+        notes="Cherry blossom week.",
+    )
     trip.items = [
         Flight(
             title="SFO → HND",

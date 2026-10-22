@@ -9,6 +9,7 @@ import { Button, ErrorText, Field, inputClass, TimeZoneInput } from './ui'
 export function TripForm({ trip, onDone }: { trip?: Trip; onDone: () => void }) {
   const navigate = useNavigate()
   const [title, setTitle] = useState(trip?.title ?? '')
+  const [location, setLocation] = useState(trip?.location ?? '')
   const [homeTz, setHomeTz] = useState(trip?.home_tz ?? browserZone())
   const [startDate, setStartDate] = useState(trip?.start_date ?? '')
   const [endDate, setEndDate] = useState(trip?.end_date ?? '')
@@ -22,6 +23,7 @@ export function TripForm({ trip, onDone }: { trip?: Trip; onDone: () => void }) 
     e.preventDefault()
     const fields = {
       title: title.trim(),
+      location: location.trim() || null,
       home_tz: homeTz,
       start_date: startDate || null,
       end_date: endDate || null,
@@ -49,6 +51,9 @@ export function TripForm({ trip, onDone }: { trip?: Trip; onDone: () => void }) 
     <form onSubmit={(e) => void submit(e).catch(() => {})} className="space-y-4">
       <Field label="Title">
         <input className={inputClass} value={title} required onChange={(e) => setTitle(e.target.value)} autoFocus />
+      </Field>
+      <Field label="Location" hint="Any level of detail, e.g. “Shinjuku, Japan” or just “Japan”.">
+        <input className={inputClass} value={location} maxLength={200} onChange={(e) => setLocation(e.target.value)} />
       </Field>
       <Field label="Home time zone" hint="Used for days without items, and for items with no place.">
         <TimeZoneInput value={homeTz} onChange={setHomeTz} required />

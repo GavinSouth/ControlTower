@@ -41,6 +41,7 @@ erDiagram
         uuid id PK
         uuid owner_id FK
         string title
+        string location "nullable, free text"
         date start_date "nullable"
         date end_date "nullable"
         string home_tz
@@ -201,7 +202,7 @@ GET/PATCH/DELETE   /items/{item_id}              PATCH: kind + only the fields t
 GET                /trips/{trip_id}/days         day extras that are set
 PUT/DELETE         /trips/{trip_id}/days/{date}  upsert/remove a day's title/city/summary
 GET/POST           /trips/{trip_id}/log          minutes, oldest first / add one
-DELETE             /log/{entry_id}
+PATCH/DELETE       /log/{entry_id}               PATCH: only the fields to change (item must be on the same trip)
 GET/POST           /places                       search (?q= name, city, IATA) / create
 GET/PATCH/DELETE   /places/{place_id}
 GET                /health
@@ -223,7 +224,7 @@ React + TypeScript single-page app in `web/`, served by Vite in development. The
 ```
 browser ──► Vite :5173 ──/api/*──► FastAPI :8000 ──► SQLite
               │
-              └─ React Router: /  (TripsPage)   /trips/:tripId  (TripPage → DayCard per day)
+              └─ React Router: /  (TripsPage)   /trips/:tripId  (TripPage → DayCard per day)   /places  (PlacesPage)
 ```
 - **Types from the API.** `npm run gen:api` exports the OpenAPI schema (`python -m controltower.api.openapi`) to `web/openapi.json` and generates `src/api/schema.d.ts`. `openapi-fetch` then types every path, body, and response. A backend test fails if the committed schema is stale, so the API and the UI can't drift.
 - **Server state** lives in TanStack Query (`src/api/hooks.ts`). Mutations invalidate `['trips']`, which refreshes the list, the trip, and its timeline.
@@ -232,6 +233,8 @@ browser ──► Vite :5173 ──/api/*──► FastAPI :8000 ──► SQLit
   - A create omits blank fields, so the server's defaults and zone rules apply.
   - A PATCH sends every field, so emptied fields are cleared.
   - Fields per kind come from one `DETAIL_FIELDS` table.
+- **Log and place forms** (`src/lib/logForm.ts`, `src/lib/placeForm.ts`, F3.2) follow the same pattern: pure form ↔ body functions with unit tests. A new log entry on today's card starts at the current time, else at midday; entries from the UI are `source: manual`.
+- **Trip location** (F3.2) is free text ("Shinjuku, Japan", "Japan"). An LLM can read it as-is; geocoding (country code, coordinates) is left to the recommendations research (F4.3).
 - **Timeline labels** (`src/lib/listing.ts`): single "11:05 – 13:00", starts "from 17:00", ends "until 11:00", continues "all day". A "planned …" note appears when the actual time differs.
 - **Dialogs** use native `<dialog>`, so focus trapping and Escape need no library.
 - **Demo data:** `python -m controltower.demo` adds "Japan (demo)", which exercises every kind, an overnight cross-zone flight, a multi-night stay, a delay, a log entry, and an unscheduled idea.

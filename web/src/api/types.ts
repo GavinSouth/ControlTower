@@ -9,6 +9,7 @@ export type TripPhase = Trip['phase']
 
 export type Place = Schemas['PlaceRead']
 export type PlaceCreate = Schemas['PlaceCreate']
+export type PlacePatch = Schemas['PlacePatch']
 
 export type Item =
   | Schemas['FlightRead']
@@ -26,4 +27,8 @@ export type Timeline = Schemas['TimelineRead']
 export type Day = Schemas['DayRead']
 export type Listing = Schemas['ListingRead']
 export type Role = Listing['role']
+export type DayWrite = Schemas['TripDayWrite']
 export type LogEntry = Schemas['LogEntryRead']
+export type LogEntryCreate = Schemas['LogEntryCreate']
+export type LogEntryPatch = Schemas['LogEntryPatch']
+export type LogKind = LogEntry['kind']

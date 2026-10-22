@@ -23,6 +23,7 @@ function TripCard({ trip }: { trip: Trip }) {
         <h3 className={`font-semibold ${trip.cancelled ? 'text-stone-400 line-through' : ''}`}>{trip.title}</h3>
         <Badge tone={trip.phase}>{trip.cancelled ? 'cancelled' : trip.phase}</Badge>
       </div>
+      {trip.location && <p className="mt-1 text-sm text-stone-700">📍 {trip.location}</p>}
       <p className="mt-1 text-sm text-stone-500">{formatRange(trip.first_day, trip.last_day) || 'No dates yet'}</p>
     </Link>
   )

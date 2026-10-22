@@ -2,7 +2,7 @@
 
 A trip tracking app. ControlTower keeps your past and upcoming trips organized and broken down day by day: each **trip** holds **days**, and each day holds **items** such as flights, stays, activities, transport, and notes. Later, an agent will keep a running **trip log** ("minutes") of where you are and what you're doing. Automatic flight lookup (SerpApi) is a low-priority extra at the end of the roadmap; flights are entered by hand until then.
 
-**Status:** the first **web app** is here (F3.1). Create trips, add flights, stays, transport, activities, and notes, and see each trip day by day. The backend core (data model, database, API, timeline) was finished in Phase 2. See *Run the app*. Design: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (entities, day-by-day timeline rule, DB conventions, API draft). Next: F3.2, polish from the first review. See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
+**Status:** the **web app** covers the whole trip (F3.1 + F3.2). Create trips with a destination ("Shinjuku, Japan" or just "Japan"), add flights, stays, transport, activities, and notes, and see each trip day by day. Each day can have a title, city, and summary, and you can keep a trip log (check-ins, notes) on any day. A **Places** page manages saved airports, hotels, and sights. The backend core (data model, database, API, timeline) was finished in Phase 2. See *Run the app*. Design: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (entities, day-by-day timeline rule, DB conventions, API draft). Next: Phase 4, agentic features: the trip log (F4.1 research) and location- and season-aware recommendations (F4.3). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
 
 ## How a trip is organized (planned)
 ```
@@ -20,8 +20,8 @@ Items that span days (stays, overnight flights) are stored once and appear on ev
 
 ## Architecture (planned)
 - **Backend** (`backend/`): Python 3.13 FastAPI HTTP API over a SQLite database of trips, items, places, day extras, and log entries.
-- **Agentic trip log** (Phase 4): turns signals (check-ins, location, bookings) into a daily log.
-- **Web app** (`web/`): React + TypeScript + Vite + Tailwind. Trip list, a day-by-day timeline, and forms for trips and items. Its API types are generated from the backend's OpenAPI schema.
+- **Agents** (Phase 4): a trip log that turns signals (check-ins, location, bookings) into daily minutes, and recommendations based on a trip's location and time of year.
+- **Web app** (`web/`): React + TypeScript + Vite + Tailwind. Trip list, a day-by-day timeline, forms for trips, items, day extras, and log entries, and a places page. Its API types are generated from the backend's OpenAPI schema.
 - **iOS** (Phase 5): SwiftUI app or wrapped web app on the same API.
 - **Accounts & sharing** (Phase 6): single-user until then; the model already has trip owners.
 - **Flight lookup** (Phase 7, low priority): SerpApi adapter, on demand and cached.

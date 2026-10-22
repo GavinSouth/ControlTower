@@ -11,6 +11,6 @@ npm run gen:api    # after a backend API change: refresh openapi.json + src/api/
 ```
 
 - `src/api/`: typed client (`openapi-fetch`), generated `schema.d.ts`, type aliases, TanStack Query hooks.
-- `src/lib/`: pure logic with unit tests: time zones (`time.ts`), item form ↔ API bodies (`itemForm.ts`), timeline labels (`listing.ts`).
-- `src/components/`: `DayCard`, `ItemForm`, `TripForm`, `PlacePicker`, shared `ui`.
-- `src/pages/`: `TripsPage` (`/`), `TripPage` (`/trips/:tripId`).
+- `src/lib/`: pure logic with unit tests: time zones (`time.ts`), item / log / place form ↔ API bodies (`itemForm.ts`, `logForm.ts`, `placeForm.ts`), timeline labels (`listing.ts`).
+- `src/components/`: `DayCard`, `ItemForm`, `TripForm`, `DayForm`, `LogForm`, `PlaceForm`, `PlacePicker`, shared `ui`.
+- `src/pages/`: `TripsPage` (`/`), `TripPage` (`/trips/:tripId`), `PlacesPage` (`/places`).
