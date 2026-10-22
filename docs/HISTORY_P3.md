@@ -90,3 +90,13 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
 ### Next
 - **User review of F3.2 in the browser.** The existing "Japan (demo)" was seeded before location existed, so add one via Edit trip.
 - Phase 4: **F4.1** agentic trip log research. **F4.3** recommendations research can be paired with it, since both need the LLM/agent choice.
+
+### Past trip record: idea → F3.3 / F3.4
+- Asked: experiment with what a past-trip record looks like. It should read as a fond historical record, with enough data to query, surface, and use for future recommendations. Update ROADMAP as needed.
+- Started both dev servers for the F3.2 review (uvicorn :8000, Vite :5173).
+- Done: ROADMAP gets **F3.3** (design spike: mockup + data/query design) and **F3.4** (build), placed before Phase 4 because F4.3 recommendations need this data. F4.3 now cites past-trip signals. Phase 3 is back to IN PROGRESS.
+- Proposed in chat:
+  - **Model:** trip reflection (rating, highlight, would-return, tags, companions) and item feedback (rating, favourite, review). Derived stats stay computed.
+  - **Past-trip "memory" view:** an ASCII mock.
+  - **Open questions** for the user before the spike.
+- Next: the user answers the open questions → F3.3 spike.
