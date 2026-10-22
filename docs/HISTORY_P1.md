@@ -71,5 +71,9 @@ The detailed log of the earlier scopes was condensed on 2026-10-21; the full ver
 - Decisions: Trip → Item tree with derived days; plan + actual times; UTC + per-end IANA zone; joined-table item kinds; shared places; separate log entries; SQLite + SQLAlchemy 2.0 + Alembic; UUID keys; single user with an `owner_id` so accounts and sharing can be added later.
 - Next: **F1.3 Agentic trip log research** (new session, plan mode). Open questions: which signals are realistic on web vs iOS (location needs the phone app); manual check-ins as the MVP signal; which LLM and where it runs; privacy of location history.
 
+### Roadmap reorder: web app first
+- Asked: when can a functioning local web app be reviewed? Answered: real UI at F3.1; the interactive FastAPI docs page (`localhost:8000/docs`) from F2.2 onwards. Suggested moving the agentic research out of the way.
+- Decision (user): move **F1.3 agentic trip log research → F4.1** (Phase 4, after the web frontend). Added F4.2 (build the log, TBD). Phase 1 is now **[DONE]**; Phase 2 marked **[NEXT]**. The path to a reviewable app is F2.1 → F2.2 (API page) → F2.3 → F3.1 (web app).
+
 ### Next
-- **F1.3 Agentic trip log research** (new session).
+- **F2.1 Database, models, migrations** (new session, plan mode). Implement `docs/ARCHITECTURE.md`: SQLAlchemy 2.0 models, the `UTCDateTime` type, Alembic setup, a seed "me" user, and tests. Phase 2 work gets logged in a new `docs/HISTORY_P2.md`.
