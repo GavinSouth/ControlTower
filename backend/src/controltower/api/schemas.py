@@ -17,10 +17,12 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    TypeAdapter,
     model_validator,
 )
 
-from controltower.models import ItemKind, ItemStatus, LogKind, LogSource, TransportMode
+from controltower.models import Item, ItemKind, ItemStatus, LogKind, LogSource, TransportMode
+from controltower.timeline import Role
 from controltower.trips import TripPhase
 
 
@@ -296,6 +298,13 @@ ItemRead = Annotated[
     Field(discriminator="kind"),
 ]
 
+_ITEM_READ: TypeAdapter[ItemRead] = TypeAdapter(ItemRead)
+
+
+def item_read(item: Item) -> ItemRead:
+    """ORM item → the matching FlightRead/StayRead/... (chosen by `kind`)."""
+    return _ITEM_READ.validate_python(item, from_attributes=True)
+
 
 # --- Days and log ----------------------------------------------------------
 
@@ -340,3 +349,32 @@ class LogEntryRead(ReadSchema):
     lon: float | None
     raw: dict[str, Any] | None
     created_at: datetime
+
+
+# --- Timeline (F2.3) -------------------------------------------------------
+
+
+class ListingRead(BaseModel):
+    role: Role = Field(description="single | starts | continues | ends, for this day")
+    item: ItemRead
+
+
+class DayRead(BaseModel):
+    local_date: date
+    number: int = Field(description="1-based day of the trip")
+    title: str | None = Field(description="From the day's extras, if set")
+    city: str | None
+    summary: str | None
+    items: list[ListingRead]
+    log: list[LogEntryRead]
+
+
+class TimelineRead(BaseModel):
+    trip_id: UUID
+    title: str
+    home_tz: str
+    first_day: date | None
+    last_day: date | None
+    phase: TripPhase
+    days: list[DayRead]
+    unscheduled: list[ItemRead] = Field(description="Items without times (e.g. ideas)")

@@ -8,9 +8,8 @@ filled in (place → trip home zone), and ends may not precede starts.
 from uuid import UUID
 
 from fastapi import APIRouter, Response, status
-from pydantic import TypeAdapter
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectin_polymorphic
 
 from controltower.api.deps import (
     OwnerDep,
@@ -20,7 +19,7 @@ from controltower.api.deps import (
     require_place,
     unprocessable,
 )
-from controltower.api.schemas import ItemCreate, ItemPatch, ItemRead
+from controltower.api.schemas import ItemCreate, ItemPatch, ItemRead, item_read
 from controltower.models import Activity, Flight, Item, ItemKind, Note, Stay, Transport, Trip
 
 router = APIRouter(tags=["items"])
@@ -33,12 +32,9 @@ ORM_BY_KIND: dict[str, type[Item]] = {
     ItemKind.NOTE: Note,
 }
 
-_ITEM_READ: TypeAdapter[ItemRead] = TypeAdapter(ItemRead)
-
-
-def item_read(item: Item) -> ItemRead:
-    """ORM item → the matching FlightRead/StayRead/... (chosen by `kind`)."""
-    return _ITEM_READ.validate_python(item, from_attributes=True)
+# Load every kind's detail columns up front (one extra query per kind present),
+# instead of one lazy query per item when the response is built.
+DETAIL_KINDS = [Flight, Stay, Transport, Activity]
 
 
 def apply_item_rules(session: Session, item: Item, trip: Trip) -> None:
@@ -68,7 +64,10 @@ def list_items(trip_id: UUID, session: SessionDep, owner: OwnerDep) -> list[Item
     trip = get_trip(session, owner, trip_id)
     when = func.coalesce(Item.actual_start, Item.planned_start)
     items = session.scalars(
-        select(Item).where(Item.trip_id == trip.id).order_by(when.asc().nulls_last(), Item.title)
+        select(Item)
+        .where(Item.trip_id == trip.id)
+        .options(selectin_polymorphic(Item, DETAIL_KINDS))
+        .order_by(when.asc().nulls_last(), Item.title)
     ).all()
     return [item_read(i) for i in items]
 

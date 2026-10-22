@@ -2,7 +2,7 @@
 
 A trip tracking app. ControlTower keeps your past and upcoming trips organized and broken down day by day: each **trip** holds **days**, and each day holds **items** such as flights, stays, activities, transport, and notes. Later, an agent will keep a running **trip log** ("minutes") of where you are and what you're doing. Automatic flight lookup (SerpApi) is a low-priority extra at the end of the roadmap; flights are entered by hand until then.
 
-**Status:** Phase 2 in progress. Tooling (F1.1), data model design (F1.2), database (F2.1), and **trip API (F2.2)** done. You can create trips, items, places, day extras, and log entries from the interactive API page (see *Run the API*). Design: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (entities, day-by-day timeline rule, DB conventions, API draft). Next: F2.3 day-by-day timeline, then the web app (F3.1). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
+**Status:** Phase 2 (backend core) done: tooling, data model, database, trip API, and the **day-by-day timeline** (`GET /trips/{id}/timeline`). Try it all from the interactive API page (see *Run the API*). Design: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (entities, day-by-day timeline rule, DB conventions, API draft). Next: the web app (F3.1). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
 
 ## How a trip is organized (planned)
 ```
@@ -60,6 +60,7 @@ On `/docs` you can try every endpoint in the browser ("Try it out"). A good firs
 2. `POST /places` to add an airport or hotel.
 3. `POST /trips/{trip_id}/items` with a `kind` (flight, stay, transport, activity, note).
 4. `GET /trips/{trip_id}` to see the computed dates and phase.
+5. `GET /trips/{trip_id}/timeline` to see the trip day by day: each item on every day it touches, tagged `starts` / `continues` / `ends` / `single`.
 
 Times accept any offset (e.g. `2027-04-05T11:05:00-07:00`) and come back in UTC.
 

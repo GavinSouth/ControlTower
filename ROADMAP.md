@@ -14,12 +14,12 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
   - Choice of database + ORM + migrations (proposal: SQLite to start, Postgres-ready; SQLAlchemy 2.0; Alembic).
   - Output: `docs/ARCHITECTURE.md` with an entity diagram, decisions, and the first API resource list.
 
-## Phase 2 — Backend Core  [IN PROGRESS]
+## Phase 2 — Backend Core  [DONE]
 - [x] F2.1 Database, models, and migrations (from F1.2). SQLAlchemy 2.1 models in `backend/src/controltower/models/`, Alembic initial migration, single-user seed, 16 tests.
 - [x] F2.2 Trip API: create/read/update/delete trips, days, and items. FastAPI app in `backend/src/controltower/api/` (trips, items, places, day extras, log); interactive docs at `localhost:8000/docs`; 34 tests.
-- [ ] F2.3 Day-by-day timeline endpoint (a trip's items grouped per local day).
+- [x] F2.3 Day-by-day timeline endpoint (a trip's items grouped per local day). `GET /trips/{id}/timeline` built on the pure `build_timeline()`; 47 tests.
 
-## Phase 3 — Web Frontend  [NOT STARTED]
+## Phase 3 — Web Frontend  [NEXT]
 - [ ] F3.1 TBD: trip list, trip timeline view, add/edit items. **First reviewable local web app.** (From F2.2 on, the interactive API page at `localhost:8000/docs` is reviewable.)
 
 ## Phase 4 — Agentic Trip Log  [NOT STARTED]

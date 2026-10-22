@@ -58,5 +58,26 @@ Phase 1 (tooling, scope resets, data model design) is in `HISTORY_P1.md`.
   3. That fix made the place lookup autoflush an item with a bad `place_id`, giving an FK error instead of a 422. Fixed with `session.no_autoflush` around the lookups.
 - Verified: ruff, format, mypy strict (23 files), pytest 34 passed. Ran real uvicorn on the migrated DB: create trip → create stay (times returned in UTC) → trip shows 2027-04-06..10 "upcoming" → `/docs` 200 → delete 204. The smoke-test trip was deleted; the "Me" user remains in `backend/data/controltower.db`.
 
+### F2.3 — Day-by-day timeline complete
+- Asked: start F2.3.
+- Done:
+  - `src/controltower/timeline.py`: the pure `build_timeline(trip) -> Timeline` (Day, Listing, Role, `TimelineTooLongError`).
+  - `api/routes/timeline.py`: `GET /trips/{trip_id}/timeline`.
+  - Schemas `ListingRead`, `DayRead`, `TimelineRead`. `item_read()` moved into `schemas.py` to be shared.
+  - `GET /trips/{id}/items` now eager-loads detail columns too.
+  - Tests: `tests/test_timeline.py` (10 unit tests), `tests/test_api_timeline.py` (3). **47 pass.**
+  - ARCHITECTURE timeline section + code map, README walkthrough step, ROADMAP: Phase 2 **[DONE]**, Phase 3 **[NEXT]**.
+- Decisions (edge cases the design hadn't covered):
+  - The range is stored dates, else timed items, widened by log entries and day extras. Every date is a day, including empty ones, numbered from 1.
+  - Clipped items keep their true role: a stay that began before the trip's stored start shows `continues` on day 1.
+  - Cancelled items are listed but never widen the range. Untimed items go to `unscheduled`.
+  - Day order: `continues` first, then by the moment that matters that day (start for starts/single, end for ends).
+  - Each listing carries the full item, so a multi-day stay repeats per day. That's simpler for the frontend; the payload is still small.
+  - More than 366 days → 422 (guards against a wrong-year typo).
+  - `build_timeline` reads everything from the trip (`trip.items`, `log_entries`, `days`), so there's one source of truth instead of separate arguments.
+  - **N+1 guard:** the route uses `selectinload(Trip.items).selectin_polymorphic([Flight, Stay, Transport, Activity])` plus selectinloads for log and days. A test counts SELECTs and asserts 5 vs 50 items cost the same. Mutation check: without `selectin_polymorphic` it was **45 vs 9** SELECTs.
+- Test fix: my first endpoint test had a hotel check-in (15:00) before the flight landed (15:25), so the rule correctly sorted the hotel first. I fixed the test data, not the rule.
+- Verified: ruff, format, mypy strict (25 files), pytest 47 passed. Real uvicorn: a stay 6–8 Apr gave days 1–3 as starts/continues/ends; the smoke trip was deleted.
+
 ### Next
-- **F2.3 Day-by-day timeline** (new session): `GET /trips/{id}/timeline` built on `trips.item_local_days()`, with item roles starts/continues/ends/single, log entries per local day, day extras merged in, and unscheduled items listed separately. Pure function + unit tests first.
+- **F3.1 Web frontend** (new session, plan mode): first reviewable app. Decide the stack first, e.g. a React/TypeScript SPA in `web/` (Vite) vs server-rendered pages (FastAPI + Jinja/HTMX). Plus CORS or a dev proxy, the trip list, the timeline view, and add/edit item forms. Phase 3 is logged in `docs/HISTORY_P3.md`.

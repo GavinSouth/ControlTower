@@ -1,4 +1,4 @@
-# Architecture — Trip Domain Model (F1.2; built in F2.1, API in F2.2)
+# Architecture — Trip Domain Model (F1.2; built in F2.1–F2.3)
 
 ControlTower records past and upcoming trips and shows each one **day by day**. This document defines the data model, the rules that turn it into days, the database choices, and a first draft of the API resources. F2.1 implemented it; see *Code map* below.
 
@@ -153,7 +153,12 @@ Stay Hotel X  check-in 6 Apr 15:00 JST, check-out 10 Apr 11:00 JST
 Flight UA 837  dep SFO 5 Apr 11:05 PDT  arr HND 6 Apr 15:25 JST
   → 5 Apr starts (SFO local) · 6 Apr ends (Tokyo local)
 ```
-This is a pure function `build_timeline(trip, items, log_entries) -> list[Day]`. There's no database involved, so it's easy to unit-test.
+Implemented in F2.3 as the pure function `build_timeline(trip) -> Timeline` (`controltower/timeline.py`), with no database involved, so it's easy to unit-test. Rules settled while building:
+- **Range:** stored trip dates, else the timed items, widened to include any log entries or day extras. Every date in the range is a day, including empty ones, numbered from 1.
+- **Clipping:** an item that starts before the range keeps its true role. A stay that began before the trip's stored start shows `continues` on day 1.
+- **Cancelled items** are listed, with their status, but never widen the range.
+- **Untimed items** (e.g. ideas) go to `unscheduled`, not onto a day.
+- **Size limit:** a timeline longer than 366 days is refused (a 422), which catches typos like the wrong year.
 
 ## Database conventions (for F2.1)
 - **SQLAlchemy 2.0** typed models (`Mapped[...]`, `mapped_column`), which work with mypy strict without plugins.
@@ -180,6 +185,9 @@ This is a pure function `build_timeline(trip, items, log_entries) -> list[Day]`.
 | `backend/src/controltower/api/schemas.py` | Pydantic request/response models; item shapes are discriminated unions on `kind` |
 | `backend/src/controltower/api/routes/` | `trips`, `items`, `places`, `days`, `log` routers |
 | `backend/tests/test_api.py`, `test_trips.py` | HTTP behaviour through `TestClient`; computed trip rules |
+| `backend/src/controltower/timeline.py` | `build_timeline()`: days, roles (`single/starts/continues/ends`), log placement, unscheduled |
+| `backend/src/controltower/api/routes/timeline.py` | `GET /trips/{id}/timeline`; eager-loads items (+ per-kind details), log, day extras in a fixed number of queries |
+| `backend/tests/test_timeline.py`, `test_api_timeline.py` | Timeline rule unit tests; endpoint + N+1 query guard |
 
 Built on SQLAlchemy 2.1, Alembic 1.20, FastAPI 0.159, Pydantic 2.14, uvicorn.
 
@@ -197,7 +205,7 @@ DELETE             /log/{entry_id}
 GET/POST           /places                       search (?q= name, city, IATA) / create
 GET/PATCH/DELETE   /places/{place_id}
 GET                /health
-GET                /trips/{trip_id}/timeline     F2.3: derived days with item listings + log entries
+GET                /trips/{trip_id}/timeline     every local day: items (full, with role), log, day extras; + unscheduled
 ```
 API rules:
 - **Times:** any ISO 8601 offset in, always UTC out. Naive times are a 422.
