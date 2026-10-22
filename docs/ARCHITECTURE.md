@@ -1,4 +1,4 @@
-# Architecture — Trip Domain Model (F1.2; backend F2.1–F2.3; web F3.1)
+# Architecture — Trip Domain Model (F1.2; backend F2.1–F2.3; web F3.1; past-trip design F3.3)
 
 ControlTower records past and upcoming trips and shows each one **day by day**. This document defines the data model, the rules that turn it into days, the database choices, and a first draft of the API resources. F2.1 implemented it; see *Code map* below.
 
@@ -238,6 +238,84 @@ browser ──► Vite :5173 ──/api/*──► FastAPI :8000 ──► SQLit
 - **Timeline labels** (`src/lib/listing.ts`): single "11:05 – 13:00", starts "from 17:00", ends "until 11:00", continues "all day". A "planned …" note appears when the actual time differs.
 - **Dialogs** use native `<dialog>`, so focus trapping and Escape need no library.
 - **Demo data:** `python -m controltower.demo` adds "Japan (demo)", which exercises every kind, an overnight cross-zone flight, a multi-night stay, a delay, a log entry, and an unscheduled idea.
+
+## Past trip record (F3.3 design; built in F3.4)
+A past trip should read as a **fond record** (cover, highlight, favourite moments, the days as a journal) and also be **structured data** that can be queried and fed to the recommendations agent (F4.3). Mockup: [`docs/mockups/past-trip.html`](mockups/past-trip.html) (open it in a browser; it has a "just ended" and a "reflected" state).
+
+### Decisions
+| # | Decision | Why |
+|---|---|---|
+| P1 | **"Past" stays computed** (`trip_phase()`: end date before today in the trip's zone). No "close trip" button. | Same rule as D2/trip phase: nothing to keep in sync. The reflection prompt is just "phase = past and no reflection yet". |
+| P2 | **Reflection and feedback are their own tables, keyed by user**: `trip_reflection (trip_id, user_id)` and `item_feedback (item_id, user_id)`. | Opinions belong to a person, not the trip. With shared trips (Phase 6), Sam and I can rate the same dinner differently, and no columns move. Today there's one row per trip/item, written by "me". |
+| P3 | **Trip rating 1–5; item verdict 👍/👎 + ♥ favourite.** | A trip is rated once, so a finer scale is worth it ("trips I rated 5"). Items are many, so a fast thumbs keeps the prompt to seconds. ♥ is separate from 👍 (a favourite is a strong 👍, a highlight to resurface). |
+| P4 | **`skipped` is a signal with no input.** `item.status = skipped` already exists. | You skipped the museum: that already says something. Recommendations count it with 👎, weighted lower. |
+| P5 | **Tags and companions are free-text lists** (a JSON array of strings), trimmed and lower-cased for tags. | Simple to enter and enough at single-user scale (filter in Python). If tag queries get heavy, move to a `trip_tag (trip_id, tag)` table, a mechanical migration. Companions become real people in Phase 6. |
+| P6 | **Stats are derived, never stored** (a pure `trip_stats(trip)` function, like `build_timeline`). | They can't go stale when an item is edited. |
+| P7 | **All fields are optional, and reflecting is never required.** | A record with only a rating is still useful. The UI nudges, it doesn't block. |
+
+### New tables
+```mermaid
+erDiagram
+    TRIP ||--o{ TRIP_REFLECTION : "one per user"
+    ITEM ||--o{ ITEM_FEEDBACK : "one per user"
+    USER ||--o{ TRIP_REFLECTION : writes
+    USER ||--o{ ITEM_FEEDBACK : writes
+    TRIP_REFLECTION {
+        uuid trip_id PK "FK, cascade"
+        uuid user_id PK "FK"
+        int rating "1-5, nullable"
+        text highlight
+        bool would_return "nullable = unsure"
+        json tags "list of strings"
+        json companions "list of strings"
+        text notes
+    }
+    ITEM_FEEDBACK {
+        uuid item_id PK "FK, cascade"
+        uuid user_id PK "FK"
+        string verdict "up | down, nullable"
+        bool favourite
+        text review
+    }
+```
+Both get `created_at` / `updated_at`. A check constraint keeps `rating` in 1–5. A feedback row with no verdict, no favourite, and no review is deleted rather than kept empty.
+
+### Derived stats (`GET /trips/{id}/stats`)
+Computed from items (cancelled ones ignored), places, and dates:
+| Stat | Rule |
+|---|---|
+| nights | `last_day − first_day` |
+| cities | distinct `trip_day.city` ∪ `place.city` of stays and activities. Flights and transport are left out, so the home airport doesn't count as a city. |
+| countries | distinct `place.country` of the same places |
+| flights | count of flight items not skipped |
+| spend | `cost_amount` summed **per currency** (no conversion, as before). Skipped items count: you usually paid anyway. |
+| season | meteorological season of the trip's middle date; flipped if most dated places have `lat < 0` (southern hemisphere) |
+| feedback | counts of 👍, 👎, ♥, skipped, and items still without feedback (drives the "9 items still need…" prompt) |
+
+### Queries it must answer
+| Question | How |
+|---|---|
+| Favourite food spots in Japan | activity `category = food` + `favourite` + `place.country = JP` (the place's country, not the free-text trip location) |
+| Trips I rated 5 in spring | `reflection.rating = 5` + derived season |
+| What do I usually skip? | `status = skipped` ∪ `verdict = down`, grouped by kind / activity category |
+| Would I go back to X? | `would_return` on trips whose places are in X |
+| Who do I travel with most? | count of `companions` across reflections |
+| **Recommendations (F4.3)** | A **taste profile**: liked / disliked / skipped categories, tags of highly rated trips, and the review text as-is for the LLM. Assembled by the backend and handed to the agent, so the agent never runs SQL. |
+
+### API (to build in F3.4)
+```
+GET/PUT/DELETE   /trips/{trip_id}/reflection   my reflection (PUT replaces it; 404 if none yet)
+PUT/DELETE       /items/{item_id}/feedback     my verdict / favourite / review for one item
+GET              /trips/{trip_id}/stats        derived stats (above)
+```
+- The timeline's items gain a `feedback` field (mine, or null), so the journal view needs one request.
+- Trip reads gain `reflected: bool`, so the trip list can badge past trips that are waiting for a reflection.
+- Cross-trip queries (favourites, skips) start as `GET /favourites?country=&kind=&category=`. Anything wider waits for the F4.3 taste profile.
+
+### Web (to build in F3.4)
+- A past trip's page opens in **record mode**: cover → stats strip → reflection → favourite moments → days as journal (summary and log first, items compact with 👍/👎/♥). The planning view stays one toggle away.
+- **Prompt:** a banner on past trips with no reflection; a "Reflect" dialog (rating, highlight, would return, tags, companions, notes). Feedback buttons work inline on each item.
+- **Demo:** a second seeded trip, "Lisbon (demo)", May 2025, already past, half reflected, so both states can be reviewed.
 
 ## Scaling up later (no reshaping needed)
 | Stage | Adds | Existing data |

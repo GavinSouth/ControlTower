@@ -25,7 +25,7 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
   - **Trip location** (user request): an optional destination field when creating or editing a trip, at any level of detail, e.g. "Shinjuku, Japan" or just "Japan". It shows on trip cards and the trip header. Needs a new `trip` column + Alembic migration, API and schema updates, `npm run gen:api`, and the TripForm field. Decided: **free text** (an LLM reads it as-is; any geocoding is decided in F4.1/F4.3).
   - Editing for day extras (title, city, summary) and log entries (add/edit/delete, new `PATCH /log/{id}`).
   - A places page: list, search, add, edit, delete saved places.
-- [ ] F3.3 Past trip record: design spike (user request, 2026-10-21). A past trip should read as a **fond historical record** and also hold **structured data** that can be queried, surfaced, and fed into recommendations (F4.3). Design only, no build:
+- [x] F3.3 Past trip record: design spike (user request, 2026-10-21). A past trip should read as a **fond historical record** and also hold **structured data** that can be queried, surfaced, and fed into recommendations (F4.3). Design only, no build:
   - A mockup of the past-trip view: cover (title, location, dates), a stats strip, rating and highlight, favourite moments, and the days written as a journal (day summaries + log).
   - The data to capture, and where it lives:
     - Trip reflection: rating, highlight, would-return, tags, who you travelled with.
@@ -33,7 +33,7 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
     - Derived stats (computed, never stored): nights, cities, countries, flights, spend per currency, season.
   - Which queries it must answer, e.g. "favourite food spots in Japan", "trips I rated 5 in spring", "what do I usually skip".
   - Output: a section in `docs/ARCHITECTURE.md` + the mockup, reviewed before F3.4.
-- [ ] F3.4 Past trip record: build (scoped by F3.3). Model columns + migration, API (reflection fields, a stats endpoint), past-trip view in the web app, reflection prompts when a trip ends, and a second demo trip that is already past (e.g. Lisbon 2025) for review.
+- [ ] F3.4 Past trip record: build (scoped by F3.3, see ARCHITECTURE *Past trip record*). `trip_reflection` + `item_feedback` tables + migration, API (reflection, item feedback, stats, favourites), past-trip view in the web app, reflection prompts when a trip ends, and a second demo trip that is already past (e.g. Lisbon 2025) for review.
 
 ## Phase 4 — Agentic Trip Log & Recommendations  [NOT STARTED]
 The goal is an agentic process across the whole app: agents read the trip data (location, dates, items, log) and act on it.

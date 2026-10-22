@@ -2,7 +2,7 @@
 
 A trip tracking app. ControlTower keeps your past and upcoming trips organized and broken down day by day: each **trip** holds **days**, and each day holds **items** such as flights, stays, activities, transport, and notes. Later, an agent will keep a running **trip log** ("minutes") of where you are and what you're doing. Automatic flight lookup (SerpApi) is a low-priority extra at the end of the roadmap; flights are entered by hand until then.
 
-**Status:** the **web app** covers the whole trip (F3.1 + F3.2). Create trips with a destination ("Shinjuku, Japan" or just "Japan"), add flights, stays, transport, activities, and notes, and see each trip day by day. Each day can have a title, city, and summary, and you can keep a trip log (check-ins, notes) on any day. A **Places** page manages saved airports, hotels, and sights. The backend core (data model, database, API, timeline) was finished in Phase 2. See *Run the app*. Design: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (entities, day-by-day timeline rule, DB conventions, API draft). Next: Phase 4, agentic features: the trip log (F4.1 research) and location- and season-aware recommendations (F4.3). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
+**Status:** the **web app** covers the whole trip (F3.1 + F3.2). Create trips with a destination ("Shinjuku, Japan" or just "Japan"), add flights, stays, transport, activities, and notes, and see each trip day by day. Each day can have a title, city, and summary, and you can keep a trip log (check-ins, notes) on any day. A **Places** page manages saved airports, hotels, and sights. The backend core (data model, database, API, timeline) was finished in Phase 2. See *Run the app*. Design: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (entities, day-by-day timeline rule, DB conventions, API draft). Next: **F3.4**, the past trip record (reflection, 👍/👎/♥ item feedback, derived stats, a journal-style view), designed in F3.3: see the *Past trip record* section of ARCHITECTURE and the mockup [docs/mockups/past-trip.html](docs/mockups/past-trip.html). Then Phase 4, agentic features: the trip log (F4.1) and location- and season-aware recommendations (F4.3). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
 
 ## How a trip is organized (planned)
 ```
@@ -98,7 +98,7 @@ npm run gen:api                                                  # after an API 
 ```
 backend/            Python package (src/controltower: models/, api/, trips.py, timeline.py, demo.py, db.py, config.py), migrations/ (Alembic), tests/
 web/                React app (src/api, src/lib, src/components, src/pages), openapi.json
-docs/               ARCHITECTURE.md (data model), HISTORY_P<phase>.md (context log per phase), python_research.md (tooling notes)
+docs/               ARCHITECTURE.md (data model), mockups/ (static design mockups), HISTORY_P<phase>.md (context log per phase), python_research.md (tooling notes)
 .github/workflows/  CI
 .claude/            Claude Code settings + /finish-feature skill
 .gitignore          secrets (.env), venvs, caches, OS/editor files

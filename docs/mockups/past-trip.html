@@ -1,0 +1,264 @@
+<!doctype html>
+<!--
+  F3.3 design mockup: the past-trip record. Static, self-contained, no build step.
+  Open in a browser: open docs/mockups/past-trip.html
+  Data is fictional ("Lisbon 2025", the past demo trip planned for F3.4).
+  Every value on this page maps to a field in docs/ARCHITECTURE.md → "Past trip record (F3.3)";
+  the small grey `field` labels show which.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Past Trip Record</title>
+<style>
+  :root {
+    --bg: #fafaf9; --card: #ffffff; --ink: #1c1917; --muted: #78716c; --line: #e7e5e4;
+    --soft: #f5f5f4; --accent: #0f766e; --accent-soft: #ccfbf1; --accent-ink: #115e59;
+    --warm: #b45309; --warm-soft: #fef3c7; --down: #b91c1c; --down-soft: #fee2e2;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1c1917; --card: #292524; --ink: #f5f5f4; --muted: #a8a29e; --line: #44403c;
+      --soft: #322d2a; --accent: #5eead4; --accent-soft: #134e4a; --accent-ink: #99f6e4;
+      --warm: #fbbf24; --warm-soft: #451a03; --down: #fca5a5; --down-soft: #450a0a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--sans); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px 64px; }
+  header.app { display: flex; gap: 20px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+  header.app b { color: var(--accent); }
+  header.app span { color: var(--muted); font-size: 14px; }
+  .note { font: 12px/1.4 var(--mono); color: var(--muted); }
+  .field { font: 11px var(--mono); color: var(--muted); background: var(--soft); border-radius: 4px; padding: 1px 5px; white-space: nowrap; }
+
+  /* Mockup-only state switcher */
+  .switch { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .switch button { font: 13px var(--sans); border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+  .switch button[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* Cover */
+  .cover { background: linear-gradient(135deg, var(--accent-soft), var(--warm-soft)); border-radius: 16px; padding: 28px 24px; margin-bottom: 16px; }
+  .cover .phase { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
+  .cover h1 { font: 600 40px/1.1 var(--serif); margin: 6px 0 8px; }
+  .cover .meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--ink); opacity: .85; }
+  .cover blockquote { font: italic 19px/1.45 var(--serif); margin: 18px 0 0; padding-left: 14px; border-left: 3px solid var(--warm); }
+
+  /* Stats strip */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .stat { background: var(--card); padding: 12px 14px; }
+  .stat .v { font: 600 22px/1.2 var(--serif); }
+  .stat .k { font-size: 12px; color: var(--muted); }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h2 { font: 600 20px var(--serif); margin: 0 0 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
+  /* Reflection */
+  .reflect { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+  @media (max-width: 600px) { .reflect { grid-template-columns: 1fr; } .cover h1 { font-size: 32px; } }
+  .reflect dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .reflect dd { margin: 0; }
+  .stars { color: var(--warm); font-size: 20px; letter-spacing: 2px; }
+  .chip { display: inline-block; background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; margin: 2px 4px 2px 0; font-size: 13px; }
+
+  /* Favourites */
+  .favs { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .fav { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--bg); }
+  .fav .t { font-weight: 600; }
+  .fav .w { font-size: 12px; color: var(--muted); }
+  .fav p { font: italic 15px/1.45 var(--serif); margin: 8px 0 0; }
+
+  /* Journal days */
+  .day { display: grid; grid-template-columns: 74px 1fr; gap: 16px; padding: 18px 0; border-top: 1px solid var(--line); }
+  .day:first-of-type { border-top: 0; padding-top: 4px; }
+  .day .date { text-align: right; color: var(--muted); font-size: 13px; }
+  .day .date b { display: block; font: 600 26px/1 var(--serif); color: var(--ink); }
+  .day h3 { font: 600 18px var(--serif); margin: 0; }
+  .day .city { font-size: 13px; color: var(--muted); }
+  .day .summary { font: 16px/1.6 var(--serif); margin: 8px 0 10px; }
+  .log { border-left: 2px solid var(--accent-soft); padding-left: 12px; margin: 8px 0 10px; }
+  .log div { font-size: 14px; }
+  .log time { color: var(--muted); font: 12px var(--mono); margin-right: 6px; }
+  ul.items { list-style: none; padding: 0; margin: 0; }
+  ul.items li { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 14px; flex-wrap: wrap; }
+  ul.items .when { color: var(--muted); font: 12px var(--mono); min-width: 88px; }
+  ul.items .skipped .title { text-decoration: line-through; color: var(--muted); }
+  ul.items .rev { width: 100%; padding-left: 96px; color: var(--muted); font-style: italic; font-size: 13px; margin-top: -2px; }
+  .fb { margin-left: auto; display: inline-flex; gap: 4px; }
+  .fb button { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 6px; font-size: 13px; padding: 1px 7px; cursor: pointer; }
+  .fb button.on.up { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent); }
+  .fb button.on.down { background: var(--down-soft); color: var(--down); border-color: var(--down); }
+  .fb button.on.fav { background: var(--warm-soft); color: var(--warm); border-color: var(--warm); }
+  .tag-skip { font-size: 11px; color: var(--down); border: 1px solid var(--down); border-radius: 4px; padding: 0 5px; }
+
+  /* Prompt banner (unreflected state) */
+  .banner { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--warm-soft); border: 1px solid var(--warm); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; }
+  .banner b { font: 600 17px var(--serif); }
+  .btn { font: 600 14px var(--sans); background: var(--accent); color: var(--bg); border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+  .empty { color: var(--muted); font-style: italic; }
+
+  /* Signals panel */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; border-top: 0; }
+
+  [data-state="before"] .only-after, [data-state="after"] .only-before { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap" id="root" data-state="after">
+  <header class="app"><b>ControlTower</b><span>Trips</span><span>Places</span></header>
+
+  <p class="note">Mockup (F3.3). Switch states to compare a freshly ended trip with one you've reflected on. Grey <span class="field">labels</span> show the field behind each value.</p>
+  <div class="switch" role="group" aria-label="Mockup state">
+    <button data-set="before" aria-pressed="false">Just ended (no reflection yet)</button>
+    <button data-set="after" aria-pressed="true">Reflected</button>
+  </div>
+
+  <!-- Prompt shown when phase = past and there is no reflection row -->
+  <div class="banner only-before">
+    <div><b>You're back from Lisbon. How was it?</b><br><span style="font-size:14px">Two minutes now keeps the memory sharp and makes future recommendations better. 9 items still need a 👍 or 👎.</span></div>
+    <button class="btn">Reflect on this trip</button>
+  </div>
+
+  <!-- Cover -->
+  <section class="cover">
+    <div class="phase">Past trip · <span class="field">trip.phase = past</span></div>
+    <h1>Lisbon &amp; Sintra</h1>
+    <div class="meta">
+      <span>📍 Lisbon, Portugal <span class="field">trip.location</span></span>
+      <span>12 – 18 May 2025</span>
+      <span class="only-after">with Sam <span class="field">reflection.companions</span></span>
+    </div>
+    <blockquote class="only-after">"Sunset at Miradouro da Graça with a ginjinha, the whole city going gold below us."
+      <span class="field">reflection.highlight</span></blockquote>
+  </section>
+
+  <!-- Derived stats: computed, never stored -->
+  <div class="stats" aria-label="Trip stats (computed)">
+    <div class="stat"><div class="v">6</div><div class="k">nights</div></div>
+    <div class="stat"><div class="v">2</div><div class="k">cities · Lisbon, Sintra</div></div>
+    <div class="stat"><div class="v">1</div><div class="k">country · PT</div></div>
+    <div class="stat"><div class="v">2</div><div class="k">flights</div></div>
+    <div class="stat"><div class="v">€1,284</div><div class="k">+ $612 spent</div></div>
+    <div class="stat"><div class="v">Spring</div><div class="k">season</div></div>
+  </div>
+  <p class="note" style="margin:-8px 0 16px">↑ <span class="field">GET /trips/{id}/stats</span>: all derived from items, places, and dates.</p>
+
+  <!-- Reflection -->
+  <section class="card">
+    <h2>Reflection <span class="field">trip_reflection</span></h2>
+    <div class="only-before empty">Not reflected yet. Rating, highlight, and tags appear here once you do.</div>
+    <dl class="reflect only-after">
+      <div><dt>Rating <span class="field">rating 1–5</span></dt><dd class="stars" aria-label="4 of 5">★★★★☆</dd></div>
+      <div><dt>Go back? <span class="field">would_return</span></dt><dd>Yes, in a heartbeat</dd></div>
+      <div><dt>Tags <span class="field">tags[]</span></dt><dd><span class="chip">food</span><span class="chip">walking</span><span class="chip">viewpoints</span><span class="chip">city break</span></dd></div>
+      <div><dt>Travelled with <span class="field">companions[]</span></dt><dd><span class="chip">Sam</span></dd></div>
+      <div style="grid-column:1/-1"><dt>Notes <span class="field">reflection.notes</span></dt><dd style="font-family:var(--serif)">Too many hills for one week of walking. Next time base in Príncipe Real, not Baixa, and give Sintra a full day.</dd></div>
+    </dl>
+  </section>
+
+  <!-- Favourite moments: items with feedback.favourite -->
+  <section class="card only-after">
+    <h2>Favourite moments <span class="field">item_feedback.favourite</span></h2>
+    <div class="favs">
+      <div class="fav"><div class="t">♥ Taberna da Rua das Flores</div><div class="w">Activity · food · Day 2</div><p>"Order whatever's on the chalkboard. The clams."</p></div>
+      <div class="fav"><div class="t">♥ Miradouro da Graça at sunset</div><div class="w">Activity · sight · Day 3</div><p>"Worth the climb. Go 40 minutes before sunset."</p></div>
+      <div class="fav"><div class="t">♥ Casa do Príncipe</div><div class="w">Stay · 4 nights</div><p>"Quiet, tiled, the best breakfast of the trip."</p></div>
+    </div>
+  </section>
+
+  <!-- Journal: days -->
+  <section class="card">
+    <h2>The days <span class="field">GET /trips/{id}/timeline</span></h2>
+
+    <article class="day">
+      <div class="date"><b>12</b>Mon · Day 1</div>
+      <div>
+        <h3>Arrival and Alfama</h3><div class="city">Lisbon <span class="field">trip_day.city</span></div>
+        <p class="summary">Landed groggy, dropped bags, and wandered downhill until we found the river. Pastéis on a bench by the water.
+          <span class="field">trip_day.summary</span></p>
+        <div class="log"><div><time>07:40</time>Landed LIS, 20 min early.</div><div><time>15:10</time>Checked in. The room has a balcony!</div>
+          <span class="field">log_entry</span></div>
+        <ul class="items">
+          <li><span class="when">06:55 → 07:40</span>✈️ <span class="title">UA 64 EWR → LIS</span>
+            <span class="fb"><button class="up on" aria-pressed="true">👍</button><button class="down" aria-pressed="false">👎</button><button class="fav" aria-pressed="false">♥</button></span></li>
+          <li><span class="when">from 15:00</span>🏨 <span class="title">Casa do Príncipe</span>
+            <span class="fb"><button class="up on" aria-pressed="true">👍</button><button class="down" aria-pressed="false">👎</button><button class="fav on" aria-pressed="true">♥</button></span></li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="day">
+      <div class="date"><b>13</b>Tue · Day 2</div>
+      <div>
+        <h3>Trams and clams</h3><div class="city">Lisbon</div>
+        <p class="summary">Queued an hour for the 28 tram and regretted it, then the best lunch of the trip by accident.</p>
+        <ul class="items">
+          <li><span class="when">10:00 – 11:30</span>🚋 <span class="title">Tram 28</span>
+            <span class="fb"><button class="up" aria-pressed="false">👍</button><button class="down on" aria-pressed="true">👎</button><button class="fav" aria-pressed="false">♥</button></span>
+            <span class="rev">"Packed, slow. Walk the route instead." <span class="field">review</span></span></li>
+          <li><span class="when">13:00 – 14:30</span>🍽️ <span class="title">Taberna da Rua das Flores</span>
+            <span class="fb"><button class="up on" aria-pressed="true">👍</button><button class="down" aria-pressed="false">👎</button><button class="fav on" aria-pressed="true">♥</button></span></li>
+          <li class="skipped"><span class="when">16:00</span>🎟️ <span class="title">Museu do Azulejo</span><span class="tag-skip">skipped</span>
+            <span class="fb"><button class="up" aria-pressed="false">👍</button><button class="down" aria-pressed="false">👎</button><button class="fav" aria-pressed="false">♥</button></span>
+            <span class="rev"><span class="field">item.status = skipped</span>: a negative signal without any input</span></li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="day">
+      <div class="date"><b>14</b>Wed · Day 3</div>
+      <div>
+        <h3>Sintra</h3><div class="city">Sintra</div>
+        <p class="summary">Pena Palace in the fog, which was moodier than the postcards. Back for sunset at Graça.</p>
+        <ul class="items">
+          <li><span class="when">09:10 – 09:50</span>🚆 <span class="title">CP train Rossio → Sintra</span>
+            <span class="fb"><button class="up on" aria-pressed="true">👍</button><button class="down" aria-pressed="false">👎</button><button class="fav" aria-pressed="false">♥</button></span></li>
+          <li><span class="when">10:30 – 13:00</span>🏰 <span class="title">Pena Palace</span>
+            <span class="fb"><button class="up on" aria-pressed="true">👍</button><button class="down" aria-pressed="false">👎</button><button class="fav" aria-pressed="false">♥</button></span></li>
+          <li><span class="when">20:05</span>🌅 <span class="title">Miradouro da Graça</span>
+            <span class="fb"><button class="up on" aria-pressed="true">👍</button><button class="down" aria-pressed="false">👎</button><button class="fav on" aria-pressed="true">♥</button></span></li>
+        </ul>
+      </div>
+    </article>
+
+    <p class="note" style="margin:8px 0 0">… Days 4–7 continue in the same shape.</p>
+  </section>
+
+  <!-- What the data enables (design aid, not a planned UI panel) -->
+  <section class="card">
+    <h2>What this record feeds <span class="note">design aid, not part of the UI</span></h2>
+    <table>
+      <tr><th>Question</th><th>Answered by</th></tr>
+      <tr><td>Favourite food spots in Portugal</td><td><span class="field">activity.category=food</span> + <span class="field">favourite</span> + <span class="field">place.country=PT</span></td></tr>
+      <tr><td>Trips I rated 5 in spring</td><td><span class="field">reflection.rating=5</span> + derived season</td></tr>
+      <tr><td>What do I usually skip?</td><td><span class="field">status=skipped</span> ∪ <span class="field">verdict=down</span>, grouped by kind / category</td></tr>
+      <tr><td>Recommendations (F4.3)</td><td>a "taste profile": loved / disliked / skipped categories, tags of highly rated trips, and reviews as text</td></tr>
+    </table>
+  </section>
+</div>
+
+<script>
+  // Mockup only: toggle between the two states and let the feedback buttons respond.
+  const root = document.getElementById('root');
+  document.querySelectorAll('[data-set]').forEach((b) => b.addEventListener('click', () => {
+    root.dataset.state = b.dataset.set;
+    document.querySelectorAll('[data-set]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+  document.querySelectorAll('.fb').forEach((group) => group.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const on = !btn.classList.contains('on');
+    // 👍 and 👎 are one verdict, so picking one clears the other; ♥ is independent.
+    if (!btn.classList.contains('fav')) group.querySelectorAll('.up, .down').forEach((x) => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', String(on));
+  }));
+</script>
+</body>
+</html>

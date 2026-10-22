@@ -100,3 +100,34 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
   - **Past-trip "memory" view:** an ASCII mock.
   - **Open questions** for the user before the spike.
 - Next: the user answers the open questions → F3.3 spike.
+
+### F3.3 — Past trip record: design spike complete (2026-10-21)
+- Asked: `--resume`. The open questions from last session weren't in this log, so they were asked again. Answers:
+  - Mockup as a **static HTML page**.
+  - "Past" is **automatic after the end date**.
+  - Items rated **👍/👎 + ♥ favourite**.
+  - Tags and companions as **free-text lists**.
+- Done (design only, no code):
+  - `docs/mockups/past-trip.html`: self-contained mockup of a fictional "Lisbon & Sintra, May 2025" trip:
+    - cover, derived-stats strip, reflection, favourite moments, days as journal (summary, log, items with inline 👍/👎/♥, a skipped item);
+    - a "what this feeds" table;
+    - a toggle between "just ended" (reflect banner) and "reflected".
+    - Grey labels name the field behind each value.
+  - `docs/ARCHITECTURE.md` → new section *Past trip record*:
+    - decisions P1–P7;
+    - `trip_reflection` + `item_feedback` tables;
+    - the derived stats rules;
+    - the queries it must answer;
+    - the F3.4 API (`/reflection`, `/feedback`, `/stats`, `/favourites`) and web plan.
+- Decisions:
+  - **Reflection and feedback are separate tables keyed (trip/item, user)**, not trip/item columns. Opinions are per person, so Phase 6 shared trips need no reshaping.
+  - **Trip rating stays 1–5** while items use thumbs. Trips are rated once, so the finer scale is worth it (and the ROADMAP query "trips I rated 5" uses it). Easy to flip before F3.4 if you'd rather thumbs everywhere.
+  - **`skipped` status counts as a negative signal** with no user input.
+  - **Tags are a JSON list** (lower-cased), filtered in Python at this scale. A `trip_tag` table is the upgrade path.
+  - **Stats are computed** by a pure `trip_stats()`, never stored:
+    - cities and countries come from stays and activities only, so the home airport doesn't count;
+    - spend is per currency;
+    - season comes from the middle date, with a southern-hemisphere flip.
+  - **F4.3 gets a backend-built "taste profile"**; the agent never queries the DB directly.
+- Verified: backend ruff/mypy/pytest clean (51 passed). The mockup is static and wasn't rendered in a browser here.
+- Next: **user reviews the mockup + ARCHITECTURE section**. Then **F3.4** builds it. Open question: is a 1–5 trip rating alongside item thumbs OK?
