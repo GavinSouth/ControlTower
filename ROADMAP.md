@@ -16,7 +16,7 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
 
 ## Phase 2 — Backend Core  [IN PROGRESS]
 - [x] F2.1 Database, models, and migrations (from F1.2). SQLAlchemy 2.1 models in `backend/src/controltower/models/`, Alembic initial migration, single-user seed, 16 tests.
-- [ ] F2.2 Trip API: create/read/update/delete trips, days, and items.
+- [x] F2.2 Trip API: create/read/update/delete trips, days, and items. FastAPI app in `backend/src/controltower/api/` (trips, items, places, day extras, log); interactive docs at `localhost:8000/docs`; 34 tests.
 - [ ] F2.3 Day-by-day timeline endpoint (a trip's items grouped per local day).
 
 ## Phase 3 — Web Frontend  [NOT STARTED]

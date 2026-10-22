@@ -4,9 +4,11 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from controltower.api.app import create_app
 from controltower.db import make_engine, make_session_factory
 from controltower.models import Base
 
@@ -29,3 +31,10 @@ def session_factory(engine: Engine) -> sessionmaker[Session]:
 def session(session_factory: sessionmaker[Session]) -> Iterator[Session]:
     with session_factory() as session:
         yield session
+
+
+@pytest.fixture
+def client(session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
+    """HTTP client for the API, backed by this test's temporary database."""
+    with TestClient(create_app(session_factory)) as client:
+        yield client

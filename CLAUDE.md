@@ -20,7 +20,7 @@ Frontend:
 - Web first (Phase 3), iOS later (SwiftUI or wrapped web app). Python backend exposes an HTTP API that both consume.
 
 ## Layout
-- `backend/` — Python package (`src/controltower/`: `models/`, `db.py`, `config.py`), `migrations/` (Alembic), tests (`tests/`), `pyproject.toml` (tool config); local DB in `backend/data/` (git-ignored)
+- `backend/` — Python package (`src/controltower/`: `models/`, `api/`, `trips.py`, `db.py`, `config.py`), `migrations/` (Alembic), tests (`tests/`), `pyproject.toml` (tool config); local DB in `backend/data/` (git-ignored)
 - `docs/` — `HISTORY_P<phase>.md` context log per phase; `ARCHITECTURE.md` (from F1.2); `python_research.md` (user's tooling notes)
 - `.github/workflows/ci.yml` — CI: lint, format, types, tests on push/PR
 - `.claude/` — project settings (permission allowlist) and skills (`/finish-feature`)
@@ -32,6 +32,7 @@ Run from `backend/`:
 - All checks: `uv run ruff check . && uv run ruff format --check . && uv run mypy src && uv run pytest`
 - Auto-fix: `uv run ruff check --fix . && uv run ruff format .`
 - Hooks: `uv run pre-commit install` (once), `uv run pre-commit run --all-files`
+- Run the API: `uv run uvicorn controltower.api.app:app --reload` → http://localhost:8000/docs
 - DB migrate: `uv run alembic upgrade head` (creates/updates `backend/data/controltower.db`)
 - New migration after a model change: `uv run alembic revision --autogenerate -m "<what>"`, then review the file; `tests/test_migrations.py` fails if models and migrations disagree
 - End of feature: `/finish-feature`

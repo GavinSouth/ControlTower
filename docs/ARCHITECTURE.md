@@ -1,4 +1,4 @@
-# Architecture — Trip Domain Model (F1.2, built in F2.1)
+# Architecture — Trip Domain Model (F1.2; built in F2.1, API in F2.2)
 
 ControlTower records past and upcoming trips and shows each one **day by day**. This document defines the data model, the rules that turn it into days, the database choices, and a first draft of the API resources. F2.1 implemented it; see *Code map* below.
 
@@ -174,21 +174,40 @@ This is a pure function `build_timeline(trip, items, log_entries) -> list[Day]`.
 | `backend/src/controltower/db.py` | `make_engine()` (SQLite foreign keys on), `make_session_factory()`, `get_or_create_owner()` |
 | `backend/migrations/`, `backend/alembic.ini` | Alembic (batch mode for SQLite; new migrations are auto-formatted with ruff) |
 | `backend/tests/test_models.py`, `test_migrations.py` | Model behaviour; migrations == models |
+| `backend/src/controltower/trips.py` | Computed trip rules: `trip_date_range()`, `trip_phase()` (upcoming/current/past/unscheduled), `item_local_days()` |
+| `backend/src/controltower/api/app.py` | `create_app(session_factory=None)` + module-level `app` for uvicorn |
+| `backend/src/controltower/api/deps.py` | Per-request session, owner, owner-scoped 404 lookups |
+| `backend/src/controltower/api/schemas.py` | Pydantic request/response models; item shapes are discriminated unions on `kind` |
+| `backend/src/controltower/api/routes/` | `trips`, `items`, `places`, `days`, `log` routers |
+| `backend/tests/test_api.py`, `test_trips.py` | HTTP behaviour through `TestClient`; computed trip rules |
 
-Built on SQLAlchemy 2.1 and Alembic 1.20.
+Built on SQLAlchemy 2.1, Alembic 1.20, FastAPI 0.159, Pydantic 2.14, uvicorn.
 
-## API resources (first draft, built in Phase 2)
-Framework proposal: FastAPI + Pydantic schemas, kept separate from the ORM models.
+## API (F2.2)
+FastAPI + Pydantic schemas, separate from the ORM models. Interactive docs at `/docs`. Run with `uv run uvicorn controltower.api.app:app --reload`.
 ```
-GET/POST           /trips                        list (filter: upcoming|current|past) / create
-GET/PATCH/DELETE   /trips/{trip_id}
-GET/POST           /trips/{trip_id}/items        list / create (body has kind + kind-specific details)
-GET/PATCH/DELETE   /items/{item_id}
-GET                /trips/{trip_id}/timeline     derived days with item listings + log entries
-PUT                /trips/{trip_id}/days/{date}  set a day's title/city/summary
-GET/POST           /trips/{trip_id}/log          minutes for a trip
-GET/POST           /places                       search / create places
+GET/POST           /trips                        list (?phase=upcoming|current|past|unscheduled) / create
+GET/PATCH/DELETE   /trips/{trip_id}              read includes computed first_day, last_day, phase
+GET/POST           /trips/{trip_id}/items        list in time order / create (body: kind + that kind's fields)
+GET/PATCH/DELETE   /items/{item_id}              PATCH: kind + only the fields to change
+GET                /trips/{trip_id}/days         day extras that are set
+PUT/DELETE         /trips/{trip_id}/days/{date}  upsert/remove a day's title/city/summary
+GET/POST           /trips/{trip_id}/log          minutes, oldest first / add one
+DELETE             /log/{entry_id}
+GET/POST           /places                       search (?q= name, city, IATA) / create
+GET/PATCH/DELETE   /places/{place_id}
+GET                /health
+GET                /trips/{trip_id}/timeline     F2.3: derived days with item listings + log entries
 ```
+API rules:
+- **Times:** any ISO 8601 offset in, always UTC out. Naive times are a 422.
+- **Unknown fields** are a 422 (`extra="forbid"`), so typos aren't silently ignored.
+- **Time zones are filled in for you:** `start_tz` defaults to the place's zone, else the trip's `home_tz` if the item is timed. `end_tz` defaults to `to_place`'s zone.
+- **Time order:** an end before its start (planned or actual) is a 422. An unknown `place_id` or `to_place_id` is a 422.
+- **Fixed kind:** an item's kind can't change, so a PATCH must send the item's own `kind`.
+- **Clearing fields:** in a PATCH, `null` clears an optional field; required fields can't be nulled.
+- **Money** is a JSON string (`"123.45"`), keeping it exact.
+- **Ownership:** every lookup is scoped to the owner ("me"), so adding accounts later only changes how the owner is found.
 
 ## Scaling up later (no reshaping needed)
 | Stage | Adds | Existing data |

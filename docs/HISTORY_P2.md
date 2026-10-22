@@ -33,5 +33,30 @@ Phase 1 (tooling, scope resets, data model design) is in `HISTORY_P1.md`.
   - Migration files are auto-formatted then linted by ruff (Alembic post-write hooks, format before check).
 - Verified: ruff, format, mypy strict (12 files), pytest 16 passed. Mutation check: with `foreign_keys=OFF`, exactly the 3 FK tests fail. `uv run alembic upgrade head` created `backend/data/controltower.db` at revision `1f1c2a5323e6`.
 
+### F2.2 — Trip API complete
+- Asked: start F2.2. The design and the resource list were already in ARCHITECTURE.md, and the two open questions from F2.1 were settled while building (below).
+- Done:
+  - Deps: `fastapi` 0.159.1, `uvicorn` 0.54.0. Dev: `httpx2` 2.16.0 (Starlette 1.9's TestClient deprecates `httpx`; with `httpx2` the warning is gone).
+  - `src/controltower/trips.py`: computed date range and phase.
+  - `src/controltower/api/`: `app.py` (`create_app`), `deps.py`, `schemas.py`, `routes/{trips,items,places,days,log}.py`.
+  - Tests: `tests/test_api.py` (15 HTTP tests), `tests/test_trips.py` (3). `conftest.py` gained a `client` fixture. **34 tests pass.**
+  - pytest now turns `SAWarning` into errors.
+  - Docs: ARCHITECTURE API section + code map, README "Run the API", CLAUDE.md run command.
+- Decisions:
+  - **Item bodies are a discriminated union on `kind`:** one `POST /trips/{id}/items` and the docs show all five shapes. Field sets are defined once as mixins (`FlightFields`, …) and reused across Create/Patch/Read.
+  - **PATCH** = `kind` + only the changed fields (`exclude_unset`). `null` clears an optional field; `PatchSchema.NOT_NULL` blocks nulling required ones. A kind mismatch is a 422 (kind can't change).
+  - **Create** uses `exclude_none`, so DB defaults (status, transport mode) apply.
+  - All inputs use `extra="forbid"`: a typo or a flight field on a note is a 422.
+  - **Times:** `UTCDatetime` = aware datetime normalized to UTC at validation. Naive times are a 422; responses are always UTC.
+  - **Rules run after every item create/update** (`apply_item_rules`): places must exist (422), zones are filled from place → trip `home_tz`, and an end can't precede its start.
+  - Trip `first_day`/`last_day`/`phase` are computed per response (stored dates win; cancelled items are ignored; local days per item zone).
+  - Every lookup is owner-scoped through `deps.py`, so accounts only change `get_owner`.
+  - ORM → response for items goes through an explicit `TypeAdapter(ItemRead)` (typed, no `type: ignore`).
+- Bugs caught by tests while building:
+  1. Responses echoed the input offset instead of UTC: with `expire_on_commit=False` objects aren't reloaded. Fixed by normalizing to UTC in the schema.
+  2. A `SAWarning`: in SQLAlchemy 2.x, `Item(trip=trip)` no longer cascades the item into the session. Fixed with `session.add(item)` first.
+  3. That fix made the place lookup autoflush an item with a bad `place_id`, giving an FK error instead of a 422. Fixed with `session.no_autoflush` around the lookups.
+- Verified: ruff, format, mypy strict (23 files), pytest 34 passed. Ran real uvicorn on the migrated DB: create trip → create stay (times returned in UTC) → trip shows 2027-04-06..10 "upcoming" → `/docs` 200 → delete 204. The smoke-test trip was deleted; the "Me" user remains in `backend/data/controltower.db`.
+
 ### Next
-- **F2.2 Trip API** (new session, plan mode): FastAPI + Pydantic schemas (separate from ORM models), CRUD for trips/items/places/log entries, dependency-injected sessions. Reviewable at `localhost:8000/docs`. Open: per-kind item create payloads (discriminated union on `kind`), and how a PATCH handles detail fields.
+- **F2.3 Day-by-day timeline** (new session): `GET /trips/{id}/timeline` built on `trips.item_local_days()`, with item roles starts/continues/ends/single, log entries per local day, day extras merged in, and unscheduled items listed separately. Pure function + unit tests first.
