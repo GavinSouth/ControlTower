@@ -59,3 +59,13 @@ Run from `web/`:
 - At the end of a feature: run lint + tests, tick the box in ROADMAP.md, then commit - I'll push.
 - Any time work or something is prompted or done, add a concise but realistic update in the docs/HISTORY_Px.md. We're going to use this file as a context log and ROADMAP as a feature completion log. 
 - After sessions end and feature development, inform me of the decisions and tooling very concisely and provide a path to the file where work was done. Then, prepare and anticipate to expound on code changes. I want to learn best practices and deepen my understanding.
+
+## Design (Claude Design)
+- New screen or major UI change (e.g. F3.4 past-trip view, iOS screens): design on a Claude Design canvas first, built from the ControlTower design system. Review → then build.
+- Small UI change (copy, spacing, a field on an existing form): skip the canvas, build directly.
+- Keep the design system current: when a feature adds or changes a token (colour, type, spacing) or a reusable component, update the design system in the same feature, before /finish-feature.
+- Where each thing is the source of truth:
+    - the code is the truth for behaviour;
+    - the design system is the truth for look and components;
+    - docs/ARCHITECTURE.md records the decisions and links to the design artifacts.
+- Demo data only in design artifacts, never real trip details.

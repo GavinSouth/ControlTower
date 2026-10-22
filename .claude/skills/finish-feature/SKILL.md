@@ -19,5 +19,6 @@ Run these steps in order. Stop and report if any check fails — do not tick or 
    - Next: <next feature id + open questions>
    ```
 5. **Refresh README.md**: reflect new features, setup steps, or commands.
+   **Design system check** (CLAUDE.md *Design*): if the feature added or changed a colour, type, spacing or radius value, or a reusable web component, update the [ControlTower design system](https://claude.ai/artifact/U3TJjZ1ABvNMs8xPzNczwL) (read it first, change only those files) and note it in the HISTORY entry. No UI change: say "design system: no change".
 6. **Commit** on the current branch: `git add` the specific changed files (never `.env` or secrets), message `<type>: F<phase>.<n> <summary>` (type = feat/fix/chore/docs). Never push — the user pushes.
 7. **Report** concisely: decisions, tooling, file paths changed; suggest starting a new session for the next feature.

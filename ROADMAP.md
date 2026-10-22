@@ -33,7 +33,7 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
     - Derived stats (computed, never stored): nights, cities, countries, flights, spend per currency, season.
   - Which queries it must answer, e.g. "favourite food spots in Japan", "trips I rated 5 in spring", "what do I usually skip".
   - Output: a section in `docs/ARCHITECTURE.md` + the mockup, reviewed before F3.4.
-- [ ] F3.4 Past trip record: build (scoped by F3.3, see ARCHITECTURE *Past trip record*). `trip_reflection` + `item_feedback` tables + migration, API (reflection, item feedback, stats, favourites), past-trip view in the web app, reflection prompts when a trip ends, and a second demo trip that is already past (e.g. Lisbon 2025) for review.
+- [ ] F3.4 Past trip record: build (scoped by F3.3, see ARCHITECTURE *Past trip record*; visual spec: the Claude Design canvas linked there, reviewed before building). `trip_reflection` + `item_feedback` tables + migration, API (reflection, item feedback, stats, favourites), past-trip view in the web app, reflection prompts when a trip ends, and a second demo trip that is already past (e.g. Lisbon 2025) for review.
 
 ## Phase 4 — Agentic Trip Log & Recommendations  [NOT STARTED]
 The goal is an agentic process across the whole app: agents read the trip data (location, dates, items, log) and act on it.

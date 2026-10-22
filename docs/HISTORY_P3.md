@@ -131,3 +131,32 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
   - **F4.3 gets a backend-built "taste profile"**; the agent never queries the DB directly.
 - Verified: backend ruff/mypy/pytest clean (51 passed). The mockup is static and wasn't rendered in a browser here.
 - Next: **user reviews the mockup + ARCHITECTURE section**. Then **F3.4** builds it.
+
+### Question: using Claude Design
+- Asked: can Claude Design be used in this project?
+- Answered: yes. It lives in Claude as two Artifact types: **Design** (a canvas of artboards for screens and mockups) and **Design System** (tokens, components with live previews, guidelines). Standalone claude.ai/design closes 2026-12-14.
+- Proposed:
+  1. A Design System built from `web/` (stone/teal Tailwind, the existing components). Later web and iOS (Phase 5) work builds on it.
+  2. Do the F3.4 past-trip view on a Design canvas (desktop + phone, both states, the reflect dialog) instead of hand-written HTML mockups.
+- Nothing created yet; waiting for the user's go-ahead.
+
+### Claude Design rule + first design artifacts
+- Asked: should Claude Design be used throughout frontend work? Proposed a rule; the user added it to CLAUDE.md (*Design (Claude Design)*) and said to start the canvas work and follow it from now on.
+- Done:
+  - **Design system:** [ControlTower](https://claude.ai/artifact/U3TJjZ1ABvNMs8xPzNczwL) (private). Built from `web/src` at `bc3c6b6`:
+    - exact Tailwind 4 oklch values for the 22 colours in use;
+    - 9 text styles, spacing, radii, shadows, layout sizes;
+    - the favicon mark;
+    - a brand-book README (copy voice, foundations, iconography);
+    - 9 components with guidelines and static previews (`bundle.css` recreates the Tailwind classes).
+  - **F3.4 canvas:** [Past Trip Record (F3.4)](https://claude.ai/artifact/TrsVJXeop1z8QH6Bh887wn) (private), with the design system installed. Five artboards: trip list, just ended (Montréal demo), reflect dialog, reflected record (interactive 👍/👎/♥; ♥ fills "Favourite moments" live; a sans/serif `voice` tweak), phone.
+  - `docs/ARCHITECTURE.md`: new *Design system* section and *Past trip record → Design* (links + proposed decisions). The F3.3 HTML mockup is marked superseded.
+  - `/finish-feature` gained a design-system check (step 5). The ROADMAP F3.4 line and the README point to the canvas.
+- Decisions (proposed, in ARCHITECTURE):
+  - Record/Plan toggle; a solid teal cover.
+  - Stars and ♥ in `teal-700`, and a neutral (not red) 👎, to keep one accent and leave red for errors.
+  - SVG icons for the feedback buttons only; kind icons stay emoji.
+  - Skipped items get no buttons.
+  - Serif voice left as a tweak to decide.
+- Gaps: previews are static (no React bundle); no dark theme (the app has none); `stone-400` hint text is 2.5:1, kept exact from the source. Not rendered or checked here, as the canvas type asks.
+- Next: the user reviews the canvas (comments can go on the artboards), picks sans or serif, then F3.4 builds.

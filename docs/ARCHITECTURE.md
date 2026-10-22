@@ -218,6 +218,19 @@ API rules:
 - **Money** is a JSON string (`"123.45"`), keeping it exact.
 - **Ownership:** every lookup is scoped to the owner ("me"), so adding accounts later only changes how the owner is found.
 
+## Design system
+The look of the web app (colours, type, spacing, radii, shadows, components, the mark) lives in the [ControlTower design system](https://claude.ai/artifact/U3TJjZ1ABvNMs8xPzNczwL), a Claude Design artifact built from `web/src` at `bc3c6b6`:
+- 22 colour tokens: the Tailwind 4 stone/teal/sky/amber/red values the app uses;
+- 9 text styles on the system sans stack;
+- 9 components: AppHeader, Button, Field, Badge, KindPicker, TripCard, DayCard, Dialog, Feedback.
+
+Its previews are static recreations of the components, not a React bundle. Per CLAUDE.md *Design*:
+- the code is the truth for behaviour, the design system for look, and this doc for decisions;
+- new screens are designed on a canvas from it first;
+- a feature that adds a token or reusable component updates it before `/finish-feature`.
+
+Known gaps: no dark theme (the app has none), and `stone-400` hint text is 2.5:1 on white, kept as-is from the source.
+
 ## Web app (F3.1)
 React + TypeScript single-page app in `web/`, served by Vite in development. The browser only talks to Vite; `/api/*` is proxied to FastAPI, so there's no CORS setup.
 
@@ -240,7 +253,7 @@ browser ──► Vite :5173 ──/api/*──► FastAPI :8000 ──► SQLit
 - **Demo data:** `python -m controltower.demo` adds "Japan (demo)", which exercises every kind, an overnight cross-zone flight, a multi-night stay, a delay, a log entry, and an unscheduled idea.
 
 ## Past trip record (F3.3 design; built in F3.4)
-A past trip should read as a **fond record** (cover, highlight, favourite moments, the days as a journal) and also be **structured data** that can be queried and fed to the recommendations agent (F4.3). Mockup: [`docs/mockups/past-trip.html`](mockups/past-trip.html) (open it in a browser; it has a "just ended" and a "reflected" state).
+A past trip should read as a **fond record** (cover, highlight, favourite moments, the days as a journal) and also be **structured data** that can be queried and fed to the recommendations agent (F4.3). Mockup: [`docs/mockups/past-trip.html`](mockups/past-trip.html) (open it in a browser; it has a "just ended" and a "reflected" state). Superseded as the visual spec by the F3.4 design canvas, see *Design* below.
 
 ### Decisions
 | # | Decision | Why |
@@ -316,6 +329,29 @@ GET              /trips/{trip_id}/stats        derived stats (above)
 - A past trip's page opens in **record mode**: cover → stats strip → reflection → favourite moments → days as journal (summary and log first, items compact with 👍/👎/♥). The planning view stays one toggle away.
 - **Prompt:** a banner on past trips with no reflection; a "Reflect" dialog (rating, highlight, would return, tags, companions, notes). Feedback buttons work inline on each item.
 - **Demo:** a second seeded trip, "Lisbon (demo)", May 2025, already past, half reflected, so both states can be reviewed.
+
+### Design (Claude Design, 2026-10-21; pending review)
+The F3.4 design canvas replaces the F3.3 HTML mockup as the visual spec: [Past Trip Record (F3.4)](https://claude.ai/artifact/TrsVJXeop1z8QH6Bh887wn). It has five artboards:
+1. the trip list;
+2. the trip right after it ends;
+3. the reflect dialog;
+4. the reflected record, with working 👍/👎/♥;
+5. the record on a phone.
+
+It uses the [ControlTower design system](https://claude.ai/artifact/U3TJjZ1ABvNMs8xPzNczwL). Both artifacts are private to the owner.
+
+Design decisions (proposed, for review):
+- **Record / Plan toggle** at the top of a past trip. Record is the default once a trip is past; Plan is today's day-card view.
+- **Cover** is a solid `teal-700` card: eyebrow, title, location · dates · companions, stars, and the highlight as a quote. It's the one bold block on the page.
+- **Stats strip:** 6 cells on desktop, 3×2 on a phone.
+- **Feedback buttons:**
+  - inline stroke-SVG icons (36px desktop, 44px phone). These are the app's first SVG icons; kind icons stay emoji.
+  - 👍 on = `teal-50`/`teal-800`; 👎 on = neutral `stone-100`/`stone-900`, because red means errors only; ♥ on = filled `teal-700`.
+  - 👍 and 👎 are one verdict, so picking one clears the other. ♥ is independent.
+- **Skipped items** show a "skipped" pill and no feedback buttons. The skip itself is the signal.
+- **Stars are `teal-700`**, not gold. That keeps one accent; amber already means "changed from plan".
+- **Typeface:** stays the system sans. The canvas has a `voice` tweak (sans / serif) on the record artboard to try a serif "journal" voice. If chosen, it becomes a new `font-serif` token in the design system.
+- **Trip list:** a past trip without a reflection gets a teal border and "How was it? Reflect on this trip →". A reflected one shows its stars and the start of its highlight.
 
 ## Scaling up later (no reshaping needed)
 | Stage | Adds | Existing data |
