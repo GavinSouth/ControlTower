@@ -14,8 +14,8 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
   - Choice of database + ORM + migrations (proposal: SQLite to start, Postgres-ready; SQLAlchemy 2.0; Alembic).
   - Output: `docs/ARCHITECTURE.md` with an entity diagram, decisions, and the first API resource list.
 
-## Phase 2 — Backend Core  [NEXT]
-- [ ] F2.1 Database, models, and migrations (from F1.2).
+## Phase 2 — Backend Core  [IN PROGRESS]
+- [x] F2.1 Database, models, and migrations (from F1.2). SQLAlchemy 2.1 models in `backend/src/controltower/models/`, Alembic initial migration, single-user seed, 16 tests.
 - [ ] F2.2 Trip API: create/read/update/delete trips, days, and items.
 - [ ] F2.3 Day-by-day timeline endpoint (a trip's items grouped per local day).
 

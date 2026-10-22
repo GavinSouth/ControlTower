@@ -25,3 +25,6 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+
+# --- App data (local SQLite database) ---
+backend/data/

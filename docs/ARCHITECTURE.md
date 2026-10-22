@@ -1,6 +1,6 @@
-# Architecture — Trip Domain Model (F1.2)
+# Architecture — Trip Domain Model (F1.2, built in F2.1)
 
-ControlTower records past and upcoming trips and shows each one **day by day**. This document defines the data model, the rules that turn it into days, the database choices, and a first draft of the API resources. F2.1 implements it.
+ControlTower records past and upcoming trips and shows each one **day by day**. This document defines the data model, the rules that turn it into days, the database choices, and a first draft of the API resources. F2.1 implemented it; see *Code map* below.
 
 ## Decisions at a glance
 | # | Decision | Why |
@@ -162,6 +162,20 @@ This is a pure function `build_timeline(trip, items, log_entries) -> list[Day]`.
 - `ZoneInfo` validation for every `*_tz` column (it must be a real IANA name).
 - DB file: `backend/data/controltower.db` (git-ignored). The URL comes from a `DATABASE_URL` setting, so Postgres later needs only a config change.
 - Foreign keys: SQLite needs `PRAGMA foreign_keys=ON` per connection (set in an engine event). Deleting a trip cascades to its items, days, and log entries; places are never cascaded.
+
+## Code map (F2.1)
+| Path | What |
+|---|---|
+| `backend/src/controltower/models/types.py` | `UTCDateTime`, `TimeZoneName`, `Money`, `str_enum()`: the portable column types (D10) |
+| `backend/src/controltower/models/base.py` | `Base` with a constraint naming convention, `UUIDPrimaryKey`, `Timestamps` |
+| `backend/src/controltower/models/enums.py` | `ItemKind`, `ItemStatus`, `TransportMode`, `LogSource`, `LogKind` |
+| `backend/src/controltower/models/{user,place,trip,item,log}.py` | Tables. `Item` is polymorphic-abstract; `Flight`/`Stay`/`Transport`/`Activity` join a `*_detail` table; `Note` lives in `item` only |
+| `backend/src/controltower/config.py` | `database_url()`: `DATABASE_URL` or `backend/data/controltower.db` |
+| `backend/src/controltower/db.py` | `make_engine()` (SQLite foreign keys on), `make_session_factory()`, `get_or_create_owner()` |
+| `backend/migrations/`, `backend/alembic.ini` | Alembic (batch mode for SQLite; new migrations are auto-formatted with ruff) |
+| `backend/tests/test_models.py`, `test_migrations.py` | Model behaviour; migrations == models |
+
+Built on SQLAlchemy 2.1 and Alembic 1.20.
 
 ## API resources (first draft, built in Phase 2)
 Framework proposal: FastAPI + Pydantic schemas, kept separate from the ORM models.

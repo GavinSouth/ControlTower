@@ -77,3 +77,4 @@ The detailed log of the earlier scopes was condensed on 2026-10-21; the full ver
 
 ### Next
 - **F2.1 Database, models, migrations** (new session, plan mode). Implement `docs/ARCHITECTURE.md`: SQLAlchemy 2.0 models, the `UTCDateTime` type, Alembic setup, a seed "me" user, and tests. Phase 2 work gets logged in a new `docs/HISTORY_P2.md`.
+- Phase 1 closed. Continued in `docs/HISTORY_P2.md`.
