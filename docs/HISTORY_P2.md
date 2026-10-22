@@ -81,3 +81,4 @@ Phase 1 (tooling, scope resets, data model design) is in `HISTORY_P1.md`.
 
 ### Next
 - **F3.1 Web frontend** (new session, plan mode): first reviewable app. Decide the stack first, e.g. a React/TypeScript SPA in `web/` (Vite) vs server-rendered pages (FastAPI + Jinja/HTMX). Plus CORS or a dev proxy, the trip list, the timeline view, and add/edit item forms. Phase 3 is logged in `docs/HISTORY_P3.md`.
+- Phase 2 closed. Continued in `docs/HISTORY_P3.md`.

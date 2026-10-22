@@ -1,0 +1,116 @@
+import { useState } from 'react'
+import { Link, useParams } from 'react-router'
+import { usePlaces, useTimeline, useTrip } from '../api/hooks'
+import type { Item } from '../api/types'
+import { DayCard } from '../components/DayCard'
+import { ItemForm } from '../components/ItemForm'
+import { TripForm } from '../components/TripForm'
+import { Badge, Button, Dialog, ErrorText } from '../components/ui'
+import { KINDS } from '../lib/itemForm'
+import { formatRange } from '../lib/time'
+
+type Editing = { type: 'trip' } | { type: 'new-item' } | { type: 'item'; item: Item } | null
+
+export function TripPage() {
+  const { tripId = '' } = useParams()
+  const trip = useTrip(tripId)
+  const timeline = useTimeline(tripId)
+  const places = usePlaces('')
+  const [editing, setEditing] = useState<Editing>(null)
+  const close = () => setEditing(null)
+
+  const placeNames = new Map(places.data?.map((p) => [p.id, p.iata_code ?? p.name]))
+  const placeName = (id: string | null) => (id ? (placeNames.get(id) ?? null) : null)
+
+  if (trip.error) {
+    return (
+      <div className="space-y-4">
+        <ErrorText error={trip.error} />
+        <Link to="/" className="text-teal-700 hover:underline">
+          ← All trips
+        </Link>
+      </div>
+    )
+  }
+  if (!trip.data || !timeline.data) return <p className="text-stone-500">Loading…</p>
+
+  const t = timeline.data
+  const homeTz = trip.data.home_tz
+  return (
+    <div className="space-y-6">
+      <div>
+        <Link to="/" className="text-sm text-teal-700 hover:underline">
+          ← All trips
+        </Link>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold">{trip.data.title}</h1>
+            <p className="mt-1 flex items-center gap-2 text-sm text-stone-500">
+              <span>{formatRange(t.first_day, t.last_day) || 'No dates yet'}</span>
+              <Badge tone={t.phase}>{trip.data.cancelled ? 'cancelled' : t.phase}</Badge>
+              <span>{homeTz}</span>
+            </p>
+            {trip.data.notes && <p className="mt-2 max-w-prose text-sm text-stone-600">{trip.data.notes}</p>}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setEditing({ type: 'trip' })}>
+              Edit trip
+            </Button>
+            <Button onClick={() => setEditing({ type: 'new-item' })}>+ Add item</Button>
+          </div>
+        </div>
+      </div>
+
+      <ErrorText error={timeline.error} />
+      {t.days.length === 0 && t.unscheduled.length === 0 && (
+        <div className="rounded-xl border border-dashed border-stone-300 p-10 text-center text-stone-500">
+          Add a flight, stay, or activity with a time and the days will appear here.
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {t.days.map((day) => (
+          <DayCard
+            key={day.local_date}
+            day={day}
+            homeTz={homeTz}
+            placeName={placeName}
+            onSelect={(item) => setEditing({ type: 'item', item })}
+          />
+        ))}
+      </div>
+
+      {t.unscheduled.length > 0 && (
+        <section aria-label="Unscheduled" className="rounded-xl border border-dashed border-stone-300 p-4">
+          <h2 className="mb-2 text-sm font-semibold tracking-wide text-stone-500 uppercase">Unscheduled</h2>
+          <ul className="space-y-1">
+            {t.unscheduled.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className="text-left hover:text-teal-700"
+                  onClick={() => setEditing({ type: 'item', item })}
+                >
+                  {KINDS.find((k) => k.kind === item.kind)?.icon} {item.title}
+                  <span className="ml-2 text-xs text-stone-400">{item.status}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <Dialog open={editing?.type === 'trip'} onClose={close} title="Edit trip">
+        <TripForm trip={trip.data} onDone={close} />
+      </Dialog>
+      <Dialog open={editing?.type === 'new-item'} onClose={close} title="Add to trip">
+        <ItemForm tripId={tripId} homeTz={homeTz} onDone={close} />
+      </Dialog>
+      <Dialog open={editing?.type === 'item'} onClose={close} title="Edit item">
+        {editing?.type === 'item' && (
+          <ItemForm key={editing.item.id} tripId={tripId} homeTz={homeTz} item={editing.item} onDone={close} />
+        )}
+      </Dialog>
+    </div>
+  )
+}

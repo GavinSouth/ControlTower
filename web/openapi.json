@@ -1,0 +1,6229 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ControlTower API",
+    "description": "Trips broken down day by day: trips, items, places, day extras, trip log.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/trips": {
+      "get": {
+        "tags": [
+          "trips"
+        ],
+        "summary": "List Trips",
+        "description": "All trips, soonest first; undated trips last. Optionally filter by phase.",
+        "operationId": "list_trips_trips_get",
+        "parameters": [
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TripPhase"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TripRead"
+                  },
+                  "title": "Response List Trips Trips Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "trips"
+        ],
+        "summary": "Create Trip",
+        "operationId": "create_trip_trips_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}": {
+      "get": {
+        "tags": [
+          "trips"
+        ],
+        "summary": "Read Trip",
+        "operationId": "read_trip_trips__trip_id__get",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "trips"
+        ],
+        "summary": "Update Trip",
+        "operationId": "update_trip_trips__trip_id__patch",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "trips"
+        ],
+        "summary": "Delete Trip",
+        "description": "Deletes the trip with its items, days, and log entries. Places are kept.",
+        "operationId": "delete_trip_trips__trip_id__delete",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}/timeline": {
+      "get": {
+        "tags": [
+          "timeline"
+        ],
+        "summary": "Read Timeline",
+        "description": "Every local day of the trip with its items (and their role that day) and log.",
+        "operationId": "read_timeline_trips__trip_id__timeline_get",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}/items": {
+      "get": {
+        "tags": [
+          "items"
+        ],
+        "summary": "List Items",
+        "description": "A trip's items in time order (actual time if recorded); untimed items last.",
+        "operationId": "list_items_trips__trip_id__items_get",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/FlightRead"
+                      },
+                      {
+                        "$ref": "#/components/schemas/StayRead"
+                      },
+                      {
+                        "$ref": "#/components/schemas/TransportRead"
+                      },
+                      {
+                        "$ref": "#/components/schemas/ActivityRead"
+                      },
+                      {
+                        "$ref": "#/components/schemas/NoteRead"
+                      }
+                    ],
+                    "discriminator": {
+                      "propertyName": "kind",
+                      "mapping": {
+                        "flight": "#/components/schemas/FlightRead",
+                        "stay": "#/components/schemas/StayRead",
+                        "transport": "#/components/schemas/TransportRead",
+                        "activity": "#/components/schemas/ActivityRead",
+                        "note": "#/components/schemas/NoteRead"
+                      }
+                    }
+                  },
+                  "title": "Response List Items Trips  Trip Id  Items Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Create Item",
+        "operationId": "create_item_trips__trip_id__items_post",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/FlightCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StayCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TransportCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ActivityCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NoteCreate"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "kind",
+                  "mapping": {
+                    "flight": "#/components/schemas/FlightCreate",
+                    "stay": "#/components/schemas/StayCreate",
+                    "transport": "#/components/schemas/TransportCreate",
+                    "activity": "#/components/schemas/ActivityCreate",
+                    "note": "#/components/schemas/NoteCreate"
+                  }
+                },
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/FlightRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/StayRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TransportRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ActivityRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NoteRead"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "flight": "#/components/schemas/FlightRead",
+                      "stay": "#/components/schemas/StayRead",
+                      "transport": "#/components/schemas/TransportRead",
+                      "activity": "#/components/schemas/ActivityRead",
+                      "note": "#/components/schemas/NoteRead"
+                    }
+                  },
+                  "title": "Response Create Item Trips  Trip Id  Items Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/items/{item_id}": {
+      "get": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Read Item",
+        "operationId": "read_item_items__item_id__get",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/FlightRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/StayRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TransportRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ActivityRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NoteRead"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "flight": "#/components/schemas/FlightRead",
+                      "stay": "#/components/schemas/StayRead",
+                      "transport": "#/components/schemas/TransportRead",
+                      "activity": "#/components/schemas/ActivityRead",
+                      "note": "#/components/schemas/NoteRead"
+                    }
+                  },
+                  "title": "Response Read Item Items  Item Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Update Item",
+        "description": "Send `kind` plus only the fields to change; send null to clear an optional field.",
+        "operationId": "update_item_items__item_id__patch",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/FlightPatch"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StayPatch"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TransportPatch"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ActivityPatch"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NotePatch"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "kind",
+                  "mapping": {
+                    "flight": "#/components/schemas/FlightPatch",
+                    "stay": "#/components/schemas/StayPatch",
+                    "transport": "#/components/schemas/TransportPatch",
+                    "activity": "#/components/schemas/ActivityPatch",
+                    "note": "#/components/schemas/NotePatch"
+                  }
+                },
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/FlightRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/StayRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TransportRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ActivityRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NoteRead"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "flight": "#/components/schemas/FlightRead",
+                      "stay": "#/components/schemas/StayRead",
+                      "transport": "#/components/schemas/TransportRead",
+                      "activity": "#/components/schemas/ActivityRead",
+                      "note": "#/components/schemas/NoteRead"
+                    }
+                  },
+                  "title": "Response Update Item Items  Item Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Delete Item",
+        "description": "Log entries that referenced the item are kept; their link is cleared.",
+        "operationId": "delete_item_items__item_id__delete",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/places": {
+      "get": {
+        "tags": [
+          "places"
+        ],
+        "summary": "Search Places",
+        "description": "Match `q` against name, city, or IATA code (case-insensitive).",
+        "operationId": "search_places_places_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlaceRead"
+                  },
+                  "title": "Response Search Places Places Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "places"
+        ],
+        "summary": "Create Place",
+        "operationId": "create_place_places_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/places/{place_id}": {
+      "get": {
+        "tags": [
+          "places"
+        ],
+        "summary": "Read Place",
+        "operationId": "read_place_places__place_id__get",
+        "parameters": [
+          {
+            "name": "place_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Place Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "places"
+        ],
+        "summary": "Update Place",
+        "operationId": "update_place_places__place_id__patch",
+        "parameters": [
+          {
+            "name": "place_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Place Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlacePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "places"
+        ],
+        "summary": "Delete Place",
+        "description": "Items and log entries that used the place keep existing, without it.",
+        "operationId": "delete_place_places__place_id__delete",
+        "parameters": [
+          {
+            "name": "place_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Place Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}/days": {
+      "get": {
+        "tags": [
+          "days"
+        ],
+        "summary": "List Days",
+        "description": "Only days that have extras set.",
+        "operationId": "list_days_trips__trip_id__days_get",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TripDayRead"
+                  },
+                  "title": "Response List Days Trips  Trip Id  Days Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}/days/{local_date}": {
+      "put": {
+        "tags": [
+          "days"
+        ],
+        "summary": "Put Day",
+        "description": "Create or replace a day's extras (fields left out are cleared).",
+        "operationId": "put_day_trips__trip_id__days__local_date__put",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          },
+          {
+            "name": "local_date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Local Date"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripDayWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripDayRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "days"
+        ],
+        "summary": "Delete Day",
+        "operationId": "delete_day_trips__trip_id__days__local_date__delete",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          },
+          {
+            "name": "local_date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Local Date"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}/log": {
+      "get": {
+        "tags": [
+          "log"
+        ],
+        "summary": "List Log",
+        "description": "Oldest first.",
+        "operationId": "list_log_trips__trip_id__log_get",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LogEntryRead"
+                  },
+                  "title": "Response List Log Trips  Trip Id  Log Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "log"
+        ],
+        "summary": "Create Log Entry",
+        "operationId": "create_log_entry_trips__trip_id__log_post",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogEntryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogEntryRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/log/{entry_id}": {
+      "delete": {
+        "tags": [
+          "log"
+        ],
+        "summary": "Delete Log Entry",
+        "operationId": "delete_log_entry_log__entry_id__delete",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivityCreate": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "examples": [
+              "food"
+            ]
+          },
+          "booking_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Booking Url"
+          },
+          "ticket_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Ref"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus",
+            "default": "planned"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "activity",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "kind"
+        ],
+        "title": "ActivityCreate"
+      },
+      "ActivityPatch": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "examples": [
+              "food"
+            ]
+          },
+          "booking_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Booking Url"
+          },
+          "ticket_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Ref"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "activity",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "ActivityPatch"
+      },
+      "ActivityRead": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "examples": [
+              "food"
+            ]
+          },
+          "booking_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Booking Url"
+          },
+          "ticket_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticket Ref"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "effective_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Start",
+            "description": "actual_start, else planned_start"
+          },
+          "effective_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective End",
+            "description": "actual_end, else planned_end"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "kind": {
+            "type": "string",
+            "const": "activity",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "trip_id",
+          "title",
+          "status",
+          "planned_start",
+          "planned_end",
+          "actual_start",
+          "actual_end",
+          "effective_start",
+          "effective_end",
+          "start_tz",
+          "end_tz",
+          "place_id",
+          "to_place_id",
+          "confirmation_code",
+          "cost_amount",
+          "cost_currency",
+          "notes",
+          "created_at",
+          "updated_at",
+          "kind"
+        ],
+        "title": "ActivityRead"
+      },
+      "DayRead": {
+        "properties": {
+          "local_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Local Date"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number",
+            "description": "1-based day of the trip"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "From the day's extras, if set"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ListingRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "log": {
+            "items": {
+              "$ref": "#/components/schemas/LogEntryRead"
+            },
+            "type": "array",
+            "title": "Log"
+          }
+        },
+        "type": "object",
+        "required": [
+          "local_date",
+          "number",
+          "title",
+          "city",
+          "summary",
+          "items",
+          "log"
+        ],
+        "title": "DayRead"
+      },
+      "FlightCreate": {
+        "properties": {
+          "airline": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Airline",
+            "examples": [
+              "UA"
+            ]
+          },
+          "flight_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flight Number",
+            "examples": [
+              "837"
+            ]
+          },
+          "seat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat"
+          },
+          "cabin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cabin"
+          },
+          "terminal_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terminal From"
+          },
+          "terminal_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terminal To"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate"
+          },
+          "aircraft": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aircraft"
+          },
+          "booking_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Booking Source"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus",
+            "default": "planned"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "flight",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "kind"
+        ],
+        "title": "FlightCreate"
+      },
+      "FlightPatch": {
+        "properties": {
+          "airline": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Airline",
+            "examples": [
+              "UA"
+            ]
+          },
+          "flight_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flight Number",
+            "examples": [
+              "837"
+            ]
+          },
+          "seat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat"
+          },
+          "cabin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cabin"
+          },
+          "terminal_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terminal From"
+          },
+          "terminal_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terminal To"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate"
+          },
+          "aircraft": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aircraft"
+          },
+          "booking_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Booking Source"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "flight",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "FlightPatch"
+      },
+      "FlightRead": {
+        "properties": {
+          "airline": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Airline",
+            "examples": [
+              "UA"
+            ]
+          },
+          "flight_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flight Number",
+            "examples": [
+              "837"
+            ]
+          },
+          "seat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat"
+          },
+          "cabin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cabin"
+          },
+          "terminal_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terminal From"
+          },
+          "terminal_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terminal To"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate"
+          },
+          "aircraft": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aircraft"
+          },
+          "booking_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Booking Source"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "effective_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Start",
+            "description": "actual_start, else planned_start"
+          },
+          "effective_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective End",
+            "description": "actual_end, else planned_end"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "kind": {
+            "type": "string",
+            "const": "flight",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "trip_id",
+          "title",
+          "status",
+          "planned_start",
+          "planned_end",
+          "actual_start",
+          "actual_end",
+          "effective_start",
+          "effective_end",
+          "start_tz",
+          "end_tz",
+          "place_id",
+          "to_place_id",
+          "confirmation_code",
+          "cost_amount",
+          "cost_currency",
+          "notes",
+          "created_at",
+          "updated_at",
+          "kind"
+        ],
+        "title": "FlightRead"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ItemStatus": {
+        "type": "string",
+        "enum": [
+          "idea",
+          "planned",
+          "booked",
+          "in_progress",
+          "done",
+          "skipped",
+          "cancelled"
+        ],
+        "title": "ItemStatus"
+      },
+      "ListingRead": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/Role",
+            "description": "single | starts | continues | ends, for this day"
+          },
+          "item": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FlightRead"
+              },
+              {
+                "$ref": "#/components/schemas/StayRead"
+              },
+              {
+                "$ref": "#/components/schemas/TransportRead"
+              },
+              {
+                "$ref": "#/components/schemas/ActivityRead"
+              },
+              {
+                "$ref": "#/components/schemas/NoteRead"
+              }
+            ],
+            "title": "Item",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "activity": "#/components/schemas/ActivityRead",
+                "flight": "#/components/schemas/FlightRead",
+                "note": "#/components/schemas/NoteRead",
+                "stay": "#/components/schemas/StayRead",
+                "transport": "#/components/schemas/TransportRead"
+              }
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "item"
+        ],
+        "title": "ListingRead"
+      },
+      "LogEntryCreate": {
+        "properties": {
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "tz": {
+            "type": "string",
+            "title": "Tz",
+            "examples": [
+              "Asia/Tokyo"
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/LogSource",
+            "default": "manual"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/LogKind"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": -90.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 180.0,
+                "minimum": -180.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          },
+          "raw": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "occurred_at",
+          "tz",
+          "kind"
+        ],
+        "title": "LogEntryCreate"
+      },
+      "LogEntryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "tz": {
+            "type": "string",
+            "title": "Tz"
+          },
+          "source": {
+            "$ref": "#/components/schemas/LogSource"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/LogKind"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          },
+          "raw": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "trip_id",
+          "occurred_at",
+          "tz",
+          "source",
+          "kind",
+          "text",
+          "item_id",
+          "place_id",
+          "lat",
+          "lon",
+          "raw",
+          "created_at"
+        ],
+        "title": "LogEntryRead"
+      },
+      "LogKind": {
+        "type": "string",
+        "enum": [
+          "check_in",
+          "arrival",
+          "departure",
+          "note",
+          "summary"
+        ],
+        "title": "LogKind"
+      },
+      "LogSource": {
+        "type": "string",
+        "enum": [
+          "manual",
+          "agent",
+          "location",
+          "calendar",
+          "email",
+          "photo"
+        ],
+        "title": "LogSource"
+      },
+      "NoteCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus",
+            "default": "planned"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "note",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "kind"
+        ],
+        "title": "NoteCreate"
+      },
+      "NotePatch": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "note",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "NotePatch"
+      },
+      "NoteRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "effective_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Start",
+            "description": "actual_start, else planned_start"
+          },
+          "effective_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective End",
+            "description": "actual_end, else planned_end"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "kind": {
+            "type": "string",
+            "const": "note",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "trip_id",
+          "title",
+          "status",
+          "planned_start",
+          "planned_end",
+          "actual_start",
+          "actual_end",
+          "effective_start",
+          "effective_end",
+          "start_tz",
+          "end_tz",
+          "place_id",
+          "to_place_id",
+          "confirmation_code",
+          "cost_amount",
+          "cost_currency",
+          "notes",
+          "created_at",
+          "updated_at",
+          "kind"
+        ],
+        "title": "NoteRead"
+      },
+      "PlaceCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 400
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country",
+            "examples": [
+              "JP"
+            ]
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": -90.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 180.0,
+                "minimum": -180.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          },
+          "tz": {
+            "type": "string",
+            "title": "Tz",
+            "examples": [
+              "Asia/Tokyo"
+            ]
+          },
+          "iata_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iata Code",
+            "examples": [
+              "HND"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "tz"
+        ],
+        "title": "PlaceCreate"
+      },
+      "PlacePatch": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 400
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country",
+            "examples": [
+              "JP"
+            ]
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": -90.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 180.0,
+                "minimum": -180.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          },
+          "tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tz"
+          },
+          "iata_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iata Code",
+            "examples": [
+              "HND"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PlacePatch"
+      },
+      "PlaceRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lon": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lon"
+          },
+          "tz": {
+            "type": "string",
+            "title": "Tz"
+          },
+          "iata_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iata Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "address",
+          "city",
+          "country",
+          "lat",
+          "lon",
+          "tz",
+          "iata_code"
+        ],
+        "title": "PlaceRead"
+      },
+      "Role": {
+        "type": "string",
+        "enum": [
+          "single",
+          "starts",
+          "continues",
+          "ends"
+        ],
+        "title": "Role"
+      },
+      "StayCreate": {
+        "properties": {
+          "property_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Name"
+          },
+          "room": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room"
+          },
+          "check_in_after": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check In After",
+            "examples": [
+              "15:00"
+            ]
+          },
+          "check_out_before": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Out Before",
+            "examples": [
+              "11:00"
+            ]
+          },
+          "host_contact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host Contact"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus",
+            "default": "planned"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "stay",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "kind"
+        ],
+        "title": "StayCreate"
+      },
+      "StayPatch": {
+        "properties": {
+          "property_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Name"
+          },
+          "room": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room"
+          },
+          "check_in_after": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check In After",
+            "examples": [
+              "15:00"
+            ]
+          },
+          "check_out_before": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Out Before",
+            "examples": [
+              "11:00"
+            ]
+          },
+          "host_contact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host Contact"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "stay",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "StayPatch"
+      },
+      "StayRead": {
+        "properties": {
+          "property_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Name"
+          },
+          "room": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room"
+          },
+          "check_in_after": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check In After",
+            "examples": [
+              "15:00"
+            ]
+          },
+          "check_out_before": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Out Before",
+            "examples": [
+              "11:00"
+            ]
+          },
+          "host_contact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host Contact"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "effective_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Start",
+            "description": "actual_start, else planned_start"
+          },
+          "effective_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective End",
+            "description": "actual_end, else planned_end"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "kind": {
+            "type": "string",
+            "const": "stay",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "trip_id",
+          "title",
+          "status",
+          "planned_start",
+          "planned_end",
+          "actual_start",
+          "actual_end",
+          "effective_start",
+          "effective_end",
+          "start_tz",
+          "end_tz",
+          "place_id",
+          "to_place_id",
+          "confirmation_code",
+          "cost_amount",
+          "cost_currency",
+          "notes",
+          "created_at",
+          "updated_at",
+          "kind"
+        ],
+        "title": "StayRead"
+      },
+      "TimelineRead": {
+        "properties": {
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "home_tz": {
+            "type": "string",
+            "title": "Home Tz"
+          },
+          "first_day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Day"
+          },
+          "last_day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Day"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/TripPhase"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/DayRead"
+            },
+            "type": "array",
+            "title": "Days"
+          },
+          "unscheduled": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/FlightRead"
+                },
+                {
+                  "$ref": "#/components/schemas/StayRead"
+                },
+                {
+                  "$ref": "#/components/schemas/TransportRead"
+                },
+                {
+                  "$ref": "#/components/schemas/ActivityRead"
+                },
+                {
+                  "$ref": "#/components/schemas/NoteRead"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "activity": "#/components/schemas/ActivityRead",
+                  "flight": "#/components/schemas/FlightRead",
+                  "note": "#/components/schemas/NoteRead",
+                  "stay": "#/components/schemas/StayRead",
+                  "transport": "#/components/schemas/TransportRead"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Unscheduled",
+            "description": "Items without times (e.g. ideas)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trip_id",
+          "title",
+          "home_tz",
+          "first_day",
+          "last_day",
+          "phase",
+          "days",
+          "unscheduled"
+        ],
+        "title": "TimelineRead"
+      },
+      "TransportCreate": {
+        "properties": {
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TransportMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "carrier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carrier"
+          },
+          "vehicle_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Ref"
+          },
+          "seat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus",
+            "default": "planned"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "transport",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "kind"
+        ],
+        "title": "TransportCreate"
+      },
+      "TransportMode": {
+        "type": "string",
+        "enum": [
+          "train",
+          "metro",
+          "bus",
+          "car",
+          "rideshare",
+          "taxi",
+          "ferry",
+          "bike",
+          "walk",
+          "other"
+        ],
+        "title": "TransportMode"
+      },
+      "TransportPatch": {
+        "properties": {
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TransportMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "carrier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carrier"
+          },
+          "vehicle_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Ref"
+          },
+          "seat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz",
+            "description": "Defaults to the place's, else the trip's"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz",
+            "description": "Defaults to to_place's, else start_tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "examples": [
+                  "USD"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "kind": {
+            "type": "string",
+            "const": "transport",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "TransportPatch"
+      },
+      "TransportRead": {
+        "properties": {
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TransportMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "carrier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carrier"
+          },
+          "vehicle_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Ref"
+          },
+          "seat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus"
+          },
+          "planned_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Start"
+          },
+          "planned_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned End"
+          },
+          "actual_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Start"
+          },
+          "actual_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual End"
+          },
+          "effective_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Start",
+            "description": "actual_start, else planned_start"
+          },
+          "effective_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective End",
+            "description": "actual_end, else planned_end"
+          },
+          "start_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Tz"
+          },
+          "end_tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Tz"
+          },
+          "place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Id"
+          },
+          "to_place_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Place Id"
+          },
+          "confirmation_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmation Code"
+          },
+          "cost_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Amount"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Currency"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "kind": {
+            "type": "string",
+            "const": "transport",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "trip_id",
+          "title",
+          "status",
+          "planned_start",
+          "planned_end",
+          "actual_start",
+          "actual_end",
+          "effective_start",
+          "effective_end",
+          "start_tz",
+          "end_tz",
+          "place_id",
+          "to_place_id",
+          "confirmation_code",
+          "cost_amount",
+          "cost_currency",
+          "notes",
+          "created_at",
+          "updated_at",
+          "kind"
+        ],
+        "title": "TransportRead"
+      },
+      "TripCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "home_tz": {
+            "type": "string",
+            "title": "Home Tz",
+            "examples": [
+              "Asia/Tokyo"
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "home_tz"
+        ],
+        "title": "TripCreate"
+      },
+      "TripDayRead": {
+        "properties": {
+          "local_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Local Date"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "local_date",
+          "title",
+          "city",
+          "summary"
+        ],
+        "title": "TripDayRead"
+      },
+      "TripDayWrite": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "TripDayWrite"
+      },
+      "TripPatch": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "home_tz": {
+            "anyOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "Asia/Tokyo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Tz"
+          },
+          "cancelled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "TripPatch"
+      },
+      "TripPhase": {
+        "type": "string",
+        "enum": [
+          "upcoming",
+          "current",
+          "past",
+          "unscheduled"
+        ],
+        "title": "TripPhase"
+      },
+      "TripRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date",
+            "description": "Stored start date, if set"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date",
+            "description": "Stored end date, if set"
+          },
+          "first_day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Day",
+            "description": "Effective first day (stored or from items)"
+          },
+          "last_day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Day",
+            "description": "Effective last day (stored or from items)"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/TripPhase"
+          },
+          "home_tz": {
+            "type": "string",
+            "title": "Home Tz"
+          },
+          "cancelled": {
+            "type": "boolean",
+            "title": "Cancelled"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "start_date",
+          "end_date",
+          "first_day",
+          "last_day",
+          "phase",
+          "home_tz",
+          "cancelled",
+          "notes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TripRead"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

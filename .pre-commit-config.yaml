@@ -21,3 +21,9 @@ repos:
         language: system
         files: ^backend/.*\.py$
         pass_filenames: false
+      - id: web-lint-typecheck
+        name: web lint + typecheck
+        entry: bash -c 'cd web && npm run --silent lint && npm run --silent typecheck'
+        language: system
+        files: ^web/.*\.(ts|tsx)$
+        pass_filenames: false

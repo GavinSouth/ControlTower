@@ -16,15 +16,19 @@ Backend:
 - Database: SQLite (Postgres-ready) + SQLAlchemy 2.0 + Alembic; data model in `docs/ARCHITECTURE.md`
 - Flight lookup (low priority, Phase 7): SerpApi Google Flights (`SERPAPI_API_KEY` in `.env`, see `.env.example`)
 
-Frontend:
-- Web first (Phase 3), iOS later (SwiftUI or wrapped web app). Python backend exposes an HTTP API that both consume.
+Frontend (`web/`):
+- Node 24 LTS (user-level at `~/.local/share/node`, symlinked into `~/.local/bin`), npm
+- React 19 + TypeScript 6 + Vite 8 + Tailwind 4; React Router; TanStack Query; `openapi-fetch` with types generated from the API (`openapi-typescript`); `@date-fns/tz` for zone conversion
+- **oxlint** (lint), `tsc` (types), **Vitest** + Testing Library (tests)
+- iOS later (SwiftUI or wrapped web app) on the same HTTP API
 
 ## Layout
 - `backend/` — Python package (`src/controltower/`: `models/`, `api/`, `trips.py`, `db.py`, `config.py`), `migrations/` (Alembic), tests (`tests/`), `pyproject.toml` (tool config); local DB in `backend/data/` (git-ignored)
 - `docs/` — `HISTORY_P<phase>.md` context log per phase; `ARCHITECTURE.md` (from F1.2); `python_research.md` (user's tooling notes)
 - `.github/workflows/ci.yml` — CI: lint, format, types, tests on push/PR
 - `.claude/` — project settings (permission allowlist) and skills (`/finish-feature`)
-- `web/`, `ios/` — future frontends
+- `web/` — React app (`src/api`, `src/lib`, `src/components`, `src/pages`); `openapi.json` + generated types
+- `ios/` — future
 
 ## Commands
 Run from `backend/`:
@@ -35,7 +39,14 @@ Run from `backend/`:
 - Run the API: `uv run uvicorn controltower.api.app:app --reload` → http://localhost:8000/docs
 - DB migrate: `uv run alembic upgrade head` (creates/updates `backend/data/controltower.db`)
 - New migration after a model change: `uv run alembic revision --autogenerate -m "<what>"`, then review the file; `tests/test_migrations.py` fails if models and migrations disagree
+- Demo data: `uv run python -m controltower.demo` (adds "Japan (demo)" once)
 - End of feature: `/finish-feature`
+
+Run from `web/`:
+- Setup: `npm install`
+- Dev server: `npm run dev` → http://localhost:5173 (proxies `/api` to the API on :8000, so run both)
+- All checks: `npm run lint && npm run typecheck && npm test && npm run build`
+- After any API change: `npm run gen:api` and commit `openapi.json` + `src/api/schema.d.ts` (backend test `test_openapi.py` fails if stale)
 
 ## Rules
 - Never paste credentials into CLAUDE.md or elsewhere.

@@ -19,8 +19,9 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
 - [x] F2.2 Trip API: create/read/update/delete trips, days, and items. FastAPI app in `backend/src/controltower/api/` (trips, items, places, day extras, log); interactive docs at `localhost:8000/docs`; 34 tests.
 - [x] F2.3 Day-by-day timeline endpoint (a trip's items grouped per local day). `GET /trips/{id}/timeline` built on the pure `build_timeline()`; 47 tests.
 
-## Phase 3 — Web Frontend  [NEXT]
-- [ ] F3.1 TBD: trip list, trip timeline view, add/edit items. **First reviewable local web app.** (From F2.2 on, the interactive API page at `localhost:8000/docs` is reviewable.)
+## Phase 3 — Web Frontend  [IN PROGRESS]
+- [x] F3.1 Trip list, trip timeline view, add/edit items. **First reviewable local web app.** React + TypeScript + Vite + Tailwind in `web/`; types generated from the API's OpenAPI schema; demo trip seeder; CI web job.
+- [ ] F3.2 TBD: editing for day extras and log entries, a places page, and polish from your F3.1 review.
 
 ## Phase 4 — Agentic Trip Log  [NOT STARTED]
 - [ ] F4.1 Agentic trip log research. Which signals can feed the minutes (manual check-ins, phone location, calendar, booking emails, photos); how an LLM agent turns them into a daily log; privacy and consent. Research only. (Moved from F1.3 so the web app comes first; the `log_entry` table already exists in the design.)

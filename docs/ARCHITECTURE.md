@@ -1,4 +1,4 @@
-# Architecture — Trip Domain Model (F1.2; built in F2.1–F2.3)
+# Architecture — Trip Domain Model (F1.2; backend F2.1–F2.3; web F3.1)
 
 ControlTower records past and upcoming trips and shows each one **day by day**. This document defines the data model, the rules that turn it into days, the database choices, and a first draft of the API resources. F2.1 implemented it; see *Code map* below.
 
@@ -216,6 +216,25 @@ API rules:
 - **Clearing fields:** in a PATCH, `null` clears an optional field; required fields can't be nulled.
 - **Money** is a JSON string (`"123.45"`), keeping it exact.
 - **Ownership:** every lookup is scoped to the owner ("me"), so adding accounts later only changes how the owner is found.
+
+## Web app (F3.1)
+React + TypeScript single-page app in `web/`, served by Vite in development. The browser only talks to Vite; `/api/*` is proxied to FastAPI, so there's no CORS setup.
+
+```
+browser ──► Vite :5173 ──/api/*──► FastAPI :8000 ──► SQLite
+              │
+              └─ React Router: /  (TripsPage)   /trips/:tripId  (TripPage → DayCard per day)
+```
+- **Types from the API.** `npm run gen:api` exports the OpenAPI schema (`python -m controltower.api.openapi`) to `web/openapi.json` and generates `src/api/schema.d.ts`. `openapi-fetch` then types every path, body, and response. A backend test fails if the committed schema is stale, so the API and the UI can't drift.
+- **Server state** lives in TanStack Query (`src/api/hooks.ts`). Mutations invalidate `['trips']`, which refreshes the list, the trip, and its timeline.
+- **Time zones in forms.** Inputs are wall-clock times in a chosen zone. `wallTimeToUtc` converts them with `@date-fns/tz`, and a spring-forward gap moves forward. Display uses `Intl` in each item's own zone, naming the zone when it differs from the trip's.
+- **Item form ↔ API** (`src/lib/itemForm.ts`):
+  - A create omits blank fields, so the server's defaults and zone rules apply.
+  - A PATCH sends every field, so emptied fields are cleared.
+  - Fields per kind come from one `DETAIL_FIELDS` table.
+- **Timeline labels** (`src/lib/listing.ts`): single "11:05 – 13:00", starts "from 17:00", ends "until 11:00", continues "all day". A "planned …" note appears when the actual time differs.
+- **Dialogs** use native `<dialog>`, so focus trapping and Escape need no library.
+- **Demo data:** `python -m controltower.demo` adds "Japan (demo)", which exercises every kind, an overnight cross-zone flight, a multi-night stay, a delay, a log entry, and an unscheduled idea.
 
 ## Scaling up later (no reshaping needed)
 | Stage | Adds | Existing data |
