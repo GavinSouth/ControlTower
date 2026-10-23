@@ -4,17 +4,18 @@ from uuid import UUID
 
 from fastapi import APIRouter, Response, status
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import Session, selectinload
 
 from controltower.api.deps import OwnerDep, SessionDep, get_trip, unprocessable
+from controltower.api.routes.reflection import my_reflections
 from controltower.api.schemas import TripCreate, TripPatch, TripRead
-from controltower.models import Trip
+from controltower.models import Trip, TripReflection, User
 from controltower.trips import TripPhase, trip_date_range, trip_phase
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
 
-def trip_read(trip: Trip) -> TripRead:
+def trip_read(trip: Trip, reflection: TripReflection | None) -> TripRead:
     first, last = trip_date_range(trip)
     return TripRead.model_validate(
         {
@@ -22,6 +23,7 @@ def trip_read(trip: Trip) -> TripRead:
             "first_day": first,
             "last_day": last,
             "phase": trip_phase(trip),
+            "reflection": reflection,
         }
     )
 
@@ -39,7 +41,8 @@ def list_trips(
     trips = session.scalars(
         select(Trip).where(Trip.owner_id == owner.id).options(selectinload(Trip.items))
     ).all()
-    out = [trip_read(t) for t in trips]
+    reflections = my_reflections(session, owner, (t.id for t in trips))
+    out = [trip_read(t, reflections.get(t.id)) for t in trips]
     if phase is not None:
         out = [t for t in out if t.phase is phase]
     return sorted(out, key=lambda t: (t.first_day is None, t.first_day, t.title))
@@ -51,12 +54,16 @@ def create_trip(body: TripCreate, session: SessionDep, owner: OwnerDep) -> TripR
     check_dates(trip)
     session.add(trip)
     session.commit()
-    return trip_read(trip)
+    return trip_read(trip, reflection=None)
+
+
+def _trip_read(session: Session, owner: User, trip: Trip) -> TripRead:
+    return trip_read(trip, my_reflections(session, owner, [trip.id]).get(trip.id))
 
 
 @router.get("/{trip_id}")
 def read_trip(trip_id: UUID, session: SessionDep, owner: OwnerDep) -> TripRead:
-    return trip_read(get_trip(session, owner, trip_id))
+    return _trip_read(session, owner, get_trip(session, owner, trip_id))
 
 
 @router.patch("/{trip_id}")
@@ -66,7 +73,7 @@ def update_trip(trip_id: UUID, body: TripPatch, session: SessionDep, owner: Owne
         setattr(trip, field, value)
     check_dates(trip)
     session.commit()
-    return trip_read(trip)
+    return _trip_read(session, owner, trip)
 
 
 @router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)

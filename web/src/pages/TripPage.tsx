@@ -7,6 +7,7 @@ import { DayForm } from '../components/DayForm'
 import { ItemForm } from '../components/ItemForm'
 import { LogForm } from '../components/LogForm'
 import { TripForm } from '../components/TripForm'
+import { TripRecord } from '../components/TripRecord'
 import { Badge, Button, Dialog, ErrorText } from '../components/ui'
 import { KINDS } from '../lib/itemForm'
 import { formatRange } from '../lib/time'
@@ -34,6 +35,7 @@ export function TripPage() {
   const timeline = useTimeline(tripId)
   const places = usePlaces('')
   const [editing, setEditing] = useState<Editing>(null)
+  const [view, setView] = useState<'record' | 'plan'>('record')
   const close = () => setEditing(null)
 
   const placeNames = new Map(places.data?.map((p) => [p.id, p.iata_code ?? p.name]))
@@ -53,12 +55,50 @@ export function TripPage() {
 
   const t = timeline.data
   const homeTz = trip.data.home_tz
+  // A past trip opens as a record; the planning view is one toggle away (F3.4).
+  const isPast = t.phase === 'past' && !trip.data.cancelled
+  const back = (
+    <Link to="/" className="text-sm text-teal-700 hover:underline">
+      ← All trips
+    </Link>
+  )
+  const toggle = isPast && (
+    <div role="group" aria-label="View" className="flex rounded-lg bg-stone-200 p-0.5">
+      {(['record', 'plan'] as const).map((v) => (
+        <button
+          key={v}
+          type="button"
+          aria-pressed={view === v}
+          onClick={() => setView(v)}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium capitalize ${
+            view === v ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          {v}
+        </button>
+      ))}
+    </div>
+  )
+
+  if (isPast && view === 'record') {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {back}
+          {toggle}
+        </div>
+        <TripRecord trip={trip.data} timeline={t} placeName={placeName} />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <Link to="/" className="text-sm text-teal-700 hover:underline">
-          ← All trips
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {back}
+          {toggle}
+        </div>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">{trip.data.title}</h1>

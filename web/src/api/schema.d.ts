@@ -239,6 +239,97 @@ export interface paths {
         patch: operations["update_log_entry_log__entry_id__patch"];
         trace?: never;
     };
+    "/trips/{trip_id}/reflection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Reflection
+         * @description 404 until I've reflected on the trip.
+         */
+        get: operations["read_reflection_trips__trip_id__reflection_get"];
+        /**
+         * Put Reflection
+         * @description Create or replace my reflection: fields left out are cleared.
+         */
+        put: operations["put_reflection_trips__trip_id__reflection_put"];
+        post?: never;
+        /**
+         * Delete Reflection
+         * @description Idempotent: deleting a reflection that doesn't exist is fine.
+         */
+        delete: operations["delete_reflection_trips__trip_id__reflection_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/items/{item_id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Feedback
+         * @description Replace my 👍/👎, ♥ and review. Returns null when that leaves nothing to keep.
+         */
+        put: operations["put_feedback_items__item_id__feedback_put"];
+        post?: never;
+        /** Delete Feedback */
+        delete: operations["delete_feedback_items__item_id__feedback_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Stats
+         * @description Derived on every read: nights, cities, countries, flights, spend, season, feedback.
+         */
+        get: operations["read_stats_trips__trip_id__stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/favourites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Favourites
+         * @description Items I ♥'d across all trips, most recent first (untimed last).
+         *
+         *     Filters: the place's country ("JP"), item kind, activity category ("food").
+         */
+        get: operations["list_favourites_favourites_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -419,6 +510,8 @@ export interface components {
             cost_currency: string | null;
             /** Notes */
             notes: string | null;
+            /** @description My 👍/👎/♥/review; filled in on the timeline and favourites */
+            feedback?: components["schemas"]["ItemFeedbackRead"] | null;
             /**
              * Created At
              * Format: date-time
@@ -460,6 +553,35 @@ export interface components {
             items: components["schemas"]["ListingRead"][];
             /** Log */
             log: components["schemas"]["LogEntryRead"][];
+        };
+        /** FavouriteRead */
+        FavouriteRead: {
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+            /** Trip Title */
+            trip_title: string;
+            /** Item */
+            item: components["schemas"]["FlightRead"] | components["schemas"]["StayRead"] | components["schemas"]["TransportRead"] | components["schemas"]["ActivityRead"] | components["schemas"]["NoteRead"];
+            place: components["schemas"]["PlaceRead"] | null;
+        };
+        /** FeedbackCountsRead */
+        FeedbackCountsRead: {
+            /** Up */
+            up: number;
+            /** Down */
+            down: number;
+            /** Favourite */
+            favourite: number;
+            /** Skipped */
+            skipped: number;
+            /**
+             * Pending
+             * @description Items that could still get 👍/👎 (drives the prompt)
+             */
+            pending: number;
         };
         /** FlightCreate */
         FlightCreate: {
@@ -665,6 +787,8 @@ export interface components {
             cost_currency: string | null;
             /** Notes */
             notes: string | null;
+            /** @description My 👍/👎/♥/review; filled in on the timeline and favourites */
+            feedback?: components["schemas"]["ItemFeedbackRead"] | null;
             /**
              * Created At
              * Format: date-time
@@ -686,6 +810,40 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** ItemFeedbackRead */
+        ItemFeedbackRead: {
+            verdict: components["schemas"]["Verdict"] | null;
+            /** Favourite */
+            favourite: boolean;
+            /** Review */
+            review: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * ItemFeedbackWrite
+         * @description PUT replaces my feedback. Nothing set (no verdict, no ♥, no review) deletes it.
+         */
+        ItemFeedbackWrite: {
+            /** @description up = 👍, down = 👎 */
+            verdict?: components["schemas"]["Verdict"] | null;
+            /**
+             * Favourite
+             * @description ♥: a highlight to resurface
+             * @default false
+             */
+            favourite: boolean;
+            /** Review */
+            review?: string | null;
+        };
+        /**
+         * ItemKind
+         * @enum {string}
+         */
+        ItemKind: "flight" | "stay" | "transport" | "activity" | "note";
         /**
          * ItemStatus
          * @enum {string}
@@ -930,6 +1088,8 @@ export interface components {
             cost_currency: string | null;
             /** Notes */
             notes: string | null;
+            /** @description My 👍/👎/♥/review; filled in on the timeline and favourites */
+            feedback?: components["schemas"]["ItemFeedbackRead"] | null;
             /**
              * Created At
              * Format: date-time
@@ -1023,11 +1183,91 @@ export interface components {
             /** Iata Code */
             iata_code: string | null;
         };
+        /** ReflectionBrief */
+        ReflectionBrief: {
+            /** Rating */
+            rating: number | null;
+            /** Highlight */
+            highlight: string | null;
+        };
+        /** ReflectionRead */
+        ReflectionRead: {
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+            /** Rating */
+            rating: number | null;
+            /** Highlight */
+            highlight: string | null;
+            /** Would Return */
+            would_return: boolean | null;
+            /** Tags */
+            tags: string[];
+            /** Companions */
+            companions: string[];
+            /** Notes */
+            notes: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * ReflectionWrite
+         * @description PUT replaces my whole reflection; every field is optional (P7).
+         */
+        ReflectionWrite: {
+            /**
+             * Rating
+             * @description 1-5 stars
+             */
+            rating?: number | null;
+            /**
+             * Highlight
+             * @example Sunset at Miradouro
+             */
+            highlight?: string | null;
+            /**
+             * Would Return
+             * @description null = unsure
+             */
+            would_return?: boolean | null;
+            /**
+             * Tags
+             * @example [
+             *       "food",
+             *       "slow travel"
+             *     ]
+             */
+            tags?: string[];
+            /**
+             * Companions
+             * @example [
+             *       "Sam"
+             *     ]
+             */
+            companions?: string[];
+            /** Notes */
+            notes?: string | null;
+        };
         /**
          * Role
          * @enum {string}
          */
         Role: "single" | "starts" | "continues" | "ends";
+        /**
+         * Season
+         * @enum {string}
+         */
+        Season: "winter" | "spring" | "summer" | "autumn";
         /** StayCreate */
         StayCreate: {
             /** Property Name */
@@ -1208,6 +1448,8 @@ export interface components {
             cost_currency: string | null;
             /** Notes */
             notes: string | null;
+            /** @description My 👍/👎/♥/review; filled in on the timeline and favourites */
+            feedback?: components["schemas"]["ItemFeedbackRead"] | null;
             /**
              * Created At
              * Format: date-time
@@ -1406,6 +1648,8 @@ export interface components {
             cost_currency: string | null;
             /** Notes */
             notes: string | null;
+            /** @description My 👍/👎/♥/review; filled in on the timeline and favourites */
+            feedback?: components["schemas"]["ItemFeedbackRead"] | null;
             /**
              * Created At
              * Format: date-time
@@ -1520,6 +1764,8 @@ export interface components {
              */
             last_day: string | null;
             phase: components["schemas"]["TripPhase"];
+            /** @description My reflection's rating and highlight, for the trip list; null if none yet */
+            reflection: components["schemas"]["ReflectionBrief"] | null;
             /** Home Tz */
             home_tz: string;
             /** Cancelled */
@@ -1537,6 +1783,30 @@ export interface components {
              */
             updated_at: string;
         };
+        /** TripStatsRead */
+        TripStatsRead: {
+            /** Nights */
+            nights: number | null;
+            /** Cities */
+            cities: string[];
+            /**
+             * Countries
+             * @description ISO 3166-1 alpha-2 codes
+             */
+            countries: string[];
+            /** Flights */
+            flights: number;
+            /**
+             * Spend
+             * @description Total per currency; no conversion
+             */
+            spend: {
+                [key: string]: string;
+            };
+            /** @description Of the middle date; southern hemisphere flipped */
+            season: components["schemas"]["Season"] | null;
+            feedback: components["schemas"]["FeedbackCountsRead"];
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1550,6 +1820,11 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /**
+         * Verdict
+         * @enum {string}
+         */
+        Verdict: "up" | "down";
     };
     responses: never;
     parameters: never;
@@ -2284,6 +2559,229 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LogEntryRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_reflection_trips__trip_id__reflection_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReflectionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_reflection_trips__trip_id__reflection_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReflectionWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReflectionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_reflection_trips__trip_id__reflection_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_feedback_items__item_id__feedback_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemFeedbackWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemFeedbackRead"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_feedback_items__item_id__feedback_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_stats_trips__trip_id__stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripStatsRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_favourites_favourites_get: {
+        parameters: {
+            query?: {
+                country?: string | null;
+                kind?: components["schemas"]["ItemKind"] | null;
+                category?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FavouriteRead"][];
                 };
             };
             /** @description Validation Error */

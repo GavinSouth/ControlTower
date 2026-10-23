@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTrips } from '../api/hooks'
 import type { Trip, TripPhase } from '../api/types'
+import { Stars } from '../components/Stars'
 import { TripForm } from '../components/TripForm'
 import { Badge, Button, Dialog, ErrorText } from '../components/ui'
 import { formatRange } from '../lib/time'
@@ -14,10 +15,14 @@ const SECTIONS: { phase: TripPhase; title: string }[] = [
 ]
 
 function TripCard({ trip }: { trip: Trip }) {
+  const reflectable = trip.phase === 'past' && !trip.cancelled
+  const awaiting = reflectable && !trip.reflection
   return (
     <Link
       to={`/trips/${trip.id}`}
-      className="block rounded-xl border border-stone-200 bg-white p-4 transition hover:border-teal-600 hover:shadow-sm"
+      className={`flex flex-col rounded-xl border bg-white p-4 transition hover:border-teal-600 hover:shadow-sm ${
+        awaiting ? 'border-teal-600' : 'border-stone-200'
+      }`}
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className={`font-semibold ${trip.cancelled ? 'text-stone-400 line-through' : ''}`}>{trip.title}</h3>
@@ -25,6 +30,21 @@ function TripCard({ trip }: { trip: Trip }) {
       </div>
       {trip.location && <p className="mt-1 text-sm text-stone-700">📍 {trip.location}</p>}
       <p className="mt-1 text-sm text-stone-500">{formatRange(trip.first_day, trip.last_day) || 'No dates yet'}</p>
+      {awaiting && (
+        <p className="mt-3 border-t border-stone-100 pt-3 text-sm font-medium text-teal-700">How was it? Reflect on this trip →</p>
+      )}
+      {reflectable && trip.reflection && (trip.reflection.rating || trip.reflection.highlight) && (
+        <div className="mt-3 space-y-1 border-t border-stone-100 pt-3">
+          {trip.reflection.rating && (
+            <span className="text-teal-700">
+              <Stars rating={trip.reflection.rating} />
+            </span>
+          )}
+          {trip.reflection.highlight && (
+            <p className="truncate font-serif text-sm text-stone-600">“{trip.reflection.highlight}”</p>
+          )}
+        </div>
+      )}
     </Link>
   )
 }

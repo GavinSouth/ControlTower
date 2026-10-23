@@ -14,6 +14,7 @@ const trip = (overrides: Partial<Trip>): Trip => ({
   first_day: '2027-04-05',
   last_day: '2027-04-08',
   phase: 'upcoming',
+  reflection: null,
   home_tz: 'Asia/Tokyo',
   cancelled: false,
   notes: null,
@@ -127,5 +128,103 @@ describe('App', () => {
       path: '/places/p1',
       body: { name: 'Haneda', city: 'Ōta, Tokyo', country: 'JP', iata_code: 'HND', lat: null },
     })
+  })
+
+  it('opens a past trip as a record, rates an item, and saves a reflection', async () => {
+    const pastTimeline: Timeline = {
+      ...timeline,
+      trip_id: 't2',
+      title: 'Lisbon',
+      phase: 'past',
+      first_day: '2025-05-01',
+      last_day: '2025-05-01',
+      days: [
+        {
+          local_date: '2025-05-01',
+          number: 1,
+          title: 'Belém',
+          city: 'Lisbon',
+          summary: 'Warm custard tarts.',
+          log: [],
+          items: [
+            {
+              role: 'single',
+              item: {
+                kind: 'note', id: 'i1', trip_id: 't2', title: 'Pastéis', status: 'done',
+                planned_start: '2025-05-01T10:00:00Z', planned_end: null, actual_start: null, actual_end: null,
+                effective_start: '2025-05-01T10:00:00Z', effective_end: null, start_tz: 'Europe/Lisbon', end_tz: null,
+                place_id: null, to_place_id: null, confirmation_code: null, cost_amount: null, cost_currency: null,
+                notes: null, feedback: null, created_at: '', updated_at: '',
+              },
+            },
+            {
+              role: 'single',
+              item: {
+                kind: 'activity', id: 'i2', trip_id: 't2', title: 'Tram 28', status: 'done',
+                planned_start: '2025-05-01T12:00:00Z', planned_end: null, actual_start: null, actual_end: null,
+                effective_start: '2025-05-01T12:00:00Z', effective_end: null, start_tz: 'Europe/Lisbon', end_tz: null,
+                place_id: null, to_place_id: null, confirmation_code: null, cost_amount: null, cost_currency: null,
+                notes: null, category: null, booking_url: null, ticket_ref: null, feedback: null, created_at: '', updated_at: '',
+              },
+            },
+          ],
+        },
+      ],
+    }
+    const stats = {
+      nights: 0, cities: ['Lisbon'], countries: ['PT'], flights: 0, spend: { EUR: '12' }, season: 'spring',
+      feedback: { up: 0, down: 0, favourite: 0, skipped: 0, pending: 1 },
+    }
+    const reflection = {
+      trip_id: 't2', rating: 4, highlight: null, would_return: true, tags: ['food'], companions: [], notes: null,
+      created_at: '', updated_at: '',
+    }
+    const requests = fakeApi({
+      '/trips/t2': lisbon,
+      '/trips/t2/timeline': pastTimeline,
+      '/trips/t2/stats': stats,
+      '/places': [],
+      'PUT /items/i2/feedback': { verdict: 'up', favourite: false, review: null, updated_at: '' },
+      'PUT /trips/t2/reflection': reflection,
+    })
+    renderApp('/trips/t2')
+
+    // Not reflected yet: the prompt shows, the record is the default view.
+    expect(await screen.findByRole('region', { name: 'Reflect on this trip' })).toHaveTextContent('1 item is waiting')
+    expect(screen.getByRole('heading', { name: 'Lisbon' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Trip stats' })).toHaveTextContent('€12')
+
+    // Notes get no feedback buttons; activities do.
+    expect(screen.queryByRole('group', { name: 'Feedback on Pastéis' })).not.toBeInTheDocument()
+    await userEvent.click(within(screen.getByRole('group', { name: 'Feedback on Tram 28' })).getByLabelText('Liked it'))
+    await vi.waitFor(() => expect(requests.some((r) => r.method === 'PUT')).toBe(true))
+    expect(requests.find((r) => r.method === 'PUT')).toMatchObject({
+      path: '/items/i2/feedback',
+      body: { verdict: 'up', favourite: false, review: null },
+    })
+
+    await userEvent.click(within(screen.getByRole('region', { name: 'Reflect on this trip' })).getByText('Reflect on this trip'))
+    await userEvent.click(screen.getByLabelText('4 of 5'))
+    await userEvent.type(screen.getByLabelText('Tags'), 'Food{Enter}')
+    await userEvent.click(screen.getByLabelText('Yes'))
+    await userEvent.click(screen.getByText('Save reflection'))
+    await vi.waitFor(() => expect(requests.some((r) => r.path === '/trips/t2/reflection' && r.method === 'PUT')).toBe(true))
+    expect(requests.find((r) => r.path === '/trips/t2/reflection' && r.method === 'PUT')?.body).toEqual({
+      rating: 4, highlight: null, would_return: true, tags: ['Food'], companions: [], notes: null,
+    })
+
+    // The planning view is one toggle away.
+    await userEvent.click(screen.getByRole('button', { name: 'plan' }))
+    expect(await screen.findByRole('region', { name: 'Day 1' })).toHaveTextContent('Tram 28')
+  })
+
+  it('prompts for a reflection on past trip cards, and shows stars once reflected', async () => {
+    const reflected = trip({ id: 't3', title: 'Porto', phase: 'past', reflection: { rating: 5, highlight: 'Port at sunset' } })
+    fakeApi({ '/trips': [lisbon, reflected] })
+    renderApp()
+    const past = await screen.findByRole('region', { name: 'Past trips' })
+    expect(within(past).getByText('How was it? Reflect on this trip →')).toBeInTheDocument()
+    expect(within(past).getByRole('img', { name: 'Rated 5 of 5' })).toBeInTheDocument()
+    expect(within(past).getByText('“Port at sunset”')).toBeInTheDocument()
   })
 })

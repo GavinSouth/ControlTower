@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from sqlalchemy.orm import Session, sessionmaker
 
 from controltower import __version__
-from controltower.api.routes import days, items, log, places, timeline, trips
+from controltower.api.routes import days, items, log, places, reflection, timeline, trips
 from controltower.db import make_engine, make_session_factory
 
 
@@ -18,10 +18,13 @@ def create_app(session_factory: sessionmaker[Session] | None = None) -> FastAPI:
     app = FastAPI(
         title="ControlTower API",
         version=__version__,
-        description="Trips broken down day by day: trips, items, places, day extras, trip log.",
+        description=(
+            "Trips broken down day by day: trips, items, places, day extras, trip log, "
+            "and the past trip record (reflection, item feedback, stats, favourites)."
+        ),
     )
     app.state.session_factory = session_factory or make_session_factory(make_engine())
-    for module in (trips, timeline, items, places, days, log):
+    for module in (trips, timeline, items, places, days, log, reflection):
         app.include_router(module.router)
 
     @app.get("/health", tags=["meta"])

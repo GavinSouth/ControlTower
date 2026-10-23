@@ -21,7 +21,17 @@ from pydantic import (
     model_validator,
 )
 
-from controltower.models import Item, ItemKind, ItemStatus, LogKind, LogSource, TransportMode
+from controltower.models import (
+    Item,
+    ItemFeedback,
+    ItemKind,
+    ItemStatus,
+    LogKind,
+    LogSource,
+    TransportMode,
+    Verdict,
+)
+from controltower.stats import Season
 from controltower.timeline import Role
 from controltower.trips import TripPhase
 
@@ -90,6 +100,11 @@ class TripCreate(Schema):
     notes: str | None = None
 
 
+class ReflectionBrief(ReadSchema):
+    rating: int | None
+    highlight: str | None
+
+
 class TripRead(ReadSchema):
     id: UUID
     title: str
@@ -99,6 +114,9 @@ class TripRead(ReadSchema):
     first_day: date | None = Field(description="Effective first day (stored or from items)")
     last_day: date | None = Field(description="Effective last day (stored or from items)")
     phase: TripPhase
+    reflection: ReflectionBrief | None = Field(
+        description="My reflection's rating and highlight, for the trip list; null if none yet"
+    )
     home_tz: str
     cancelled: bool
     notes: str | None
@@ -254,6 +272,21 @@ ItemPatch = Annotated[
 ]
 
 
+class ItemFeedbackWrite(Schema):
+    """PUT replaces my feedback. Nothing set (no verdict, no ♥, no review) deletes it."""
+
+    verdict: Verdict | None = Field(None, description="up = 👍, down = 👎")
+    favourite: bool = Field(False, description="♥: a highlight to resurface")
+    review: str | None = Field(None, max_length=2000)
+
+
+class ItemFeedbackRead(ReadSchema):
+    verdict: Verdict | None
+    favourite: bool
+    review: str | None
+    updated_at: datetime
+
+
 class ItemReadFields(ReadSchema):
     id: UUID
     trip_id: UUID
@@ -273,6 +306,9 @@ class ItemReadFields(ReadSchema):
     cost_amount: Decimal | None
     cost_currency: str | None
     notes: str | None
+    feedback: ItemFeedbackRead | None = Field(
+        None, description="My 👍/👎/♥/review; filled in on the timeline and favourites"
+    )
     created_at: datetime
     updated_at: datetime
 
@@ -305,9 +341,12 @@ ItemRead = Annotated[
 _ITEM_READ: TypeAdapter[ItemRead] = TypeAdapter(ItemRead)
 
 
-def item_read(item: Item) -> ItemRead:
+def item_read(item: Item, feedback: ItemFeedback | None = None) -> ItemRead:
     """ORM item → the matching FlightRead/StayRead/... (chosen by `kind`)."""
-    return _ITEM_READ.validate_python(item, from_attributes=True)
+    read = _ITEM_READ.validate_python(item, from_attributes=True)
+    if feedback is not None:
+        read.feedback = ItemFeedbackRead.model_validate(feedback)
+    return read
 
 
 # --- Days and log ----------------------------------------------------------
@@ -396,3 +435,72 @@ class TimelineRead(BaseModel):
     phase: TripPhase
     days: list[DayRead]
     unscheduled: list[ItemRead] = Field(description="Items without times (e.g. ideas)")
+
+
+# --- Past trip record (F3.4) -----------------------------------------------
+
+
+def _clean_list(values: list[str], lower: bool = False) -> list[str]:
+    """Trim, drop blanks and repeats (keeping the first spelling and the order)."""
+    out: list[str] = []
+    for value in values:
+        value = " ".join(value.split())
+        value = value.lower() if lower else value
+        if value and value.casefold() not in {v.casefold() for v in out}:
+            out.append(value)
+    return out
+
+
+Tag = Annotated[str, Field(max_length=40)]
+
+
+class ReflectionWrite(Schema):
+    """PUT replaces my whole reflection; every field is optional (P7)."""
+
+    rating: int | None = Field(None, ge=1, le=5, description="1-5 stars")
+    highlight: str | None = Field(None, max_length=500, examples=["Sunset at Miradouro"])
+    would_return: bool | None = Field(None, description="null = unsure")
+    tags: Annotated[list[Tag], AfterValidator(lambda v: _clean_list(v, lower=True))] = Field(
+        default_factory=list, max_length=30, examples=[["food", "slow travel"]]
+    )
+    companions: Annotated[list[Tag], AfterValidator(_clean_list)] = Field(
+        default_factory=list, max_length=30, examples=[["Sam"]]
+    )
+    notes: str | None = None
+
+
+class ReflectionRead(ReadSchema):
+    trip_id: UUID
+    rating: int | None
+    highlight: str | None
+    would_return: bool | None
+    tags: list[str]
+    companions: list[str]
+    notes: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class FeedbackCountsRead(ReadSchema):
+    up: int
+    down: int
+    favourite: int
+    skipped: int
+    pending: int = Field(description="Items that could still get 👍/👎 (drives the prompt)")
+
+
+class TripStatsRead(ReadSchema):
+    nights: int | None
+    cities: list[str]
+    countries: list[str] = Field(description="ISO 3166-1 alpha-2 codes")
+    flights: int
+    spend: dict[str, Decimal] = Field(description="Total per currency; no conversion")
+    season: Season | None = Field(description="Of the middle date; southern hemisphere flipped")
+    feedback: FeedbackCountsRead
+
+
+class FavouriteRead(BaseModel):
+    trip_id: UUID
+    trip_title: str
+    item: ItemRead
+    place: PlaceRead | None

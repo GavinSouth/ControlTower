@@ -184,3 +184,37 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
   3. Record/Plan toggle + solid teal cover: **kept**.
   4. Skipped items: **no feedback buttons**.
 - Recorded in `docs/ARCHITECTURE.md` → *Past trip record → Design*. The canvas and design system still show the old choices; both get updated during F3.4, before `/finish-feature`.
+- Built (backend):
+  - `trip_reflection` + `item_feedback` tables (`models/reflection.py`), keyed (trip/item, user), with cascade deletes and a 1–5 check. Migration `7214a9969f07`.
+  - Pure `trip_stats()` in `stats.py`: nights, cities and countries (stays/activities + day cities only), flights, spend per currency, season (middle date, southern flip), and feedback counts incl. `pending`.
+  - `api/routes/reflection.py`: reflection GET/PUT/DELETE, item feedback PUT/DELETE (an empty PUT deletes the row and returns null), `GET /trips/{id}/stats`, `GET /favourites?country=&kind=&category=`.
+  - The timeline's items carry my `feedback`. Trip reads carry `reflection: {rating, highlight} | null`.
+  - Demo: "Lisbon (demo)", May 2025, past, 4 of 8 rateable items rated (2 ♥, 1 👎), a skipped museum, EUR + USD costs, **no reflection**, so it opens on the prompt.
+- Built (web):
+  - A past trip opens in **Record** view, with a Record/Plan toggle (`TripPage`). `TripRecord.tsx` follows the canvas: reflect banner → teal cover → stats strip → reflection panel → favourite moments → days as a journal.
+  - `FeedbackButtons` (👍 teal, 👎/♥ red), `Stars`/`StarInput`, `ReflectForm` (rating, highlight, would return, tag/companion chips, notes), and `ListInput` (chips). The app's first SVG icons are in `icons.tsx`.
+  - Pure rules in `lib/record.ts`: each item once on its first day; favourites; "x of y rated"; stats text.
+  - Trip cards: an unreflected past trip gets a teal border + "How was it? Reflect on this trip →"; a reflected one shows stars and the highlight.
+- Decision changed during the build: `reflected: bool` became `reflection: {rating, highlight} | null`. The trip card needs both, and a bool would mean one request per card (N+1).
+- Design artifacts updated:
+  - Design system v6: `font-serif` + Journal text styles, `red-300`/`red-600`, new FeedbackButtons and RatingStars components, past TripCard states, README colour/type/icon rules.
+  - Canvas v10: serif is now the default voice; 👎/♥ are red.
+- Verified:
+  - backend ruff/format/mypy clean, 63 tests;
+  - web lint/typecheck/build clean, 34 tests;
+  - real DB migrated and seeded; `/stats` and `/favourites` checked against the Lisbon demo.
+- Not verified: no visual check in a browser (the Chrome tools weren't available this session).
+
+### F3.4 — Past trip record: build complete (2026-10-22)
+- Done: see the build entry above.
+  - Backend: `models/reflection.py`, `stats.py`, `api/routes/reflection.py`, migration `7214a9969f07`, `demo.py` (Lisbon).
+  - Web: `components/TripRecord.tsx`, `ReflectForm.tsx`, `FeedbackButtons.tsx`, `Stars.tsx`, `ListInput.tsx`, `icons.tsx`, `lib/record.ts`, `pages/TripPage.tsx`, `pages/TripsPage.tsx`.
+  - Tests: `test_stats.py`, `test_api_past_trips.py`, `test_demo.py`, `record.test.ts`, `App.test.tsx`.
+- Decisions:
+  - Serif journal voice; red 👎/♥ (user).
+  - `reflection` brief on trip reads instead of `reflected: bool`.
+  - Each item appears once in the journal, on its first day.
+  - Feedback is saved per click, with no form.
+  - The `pending` count and the web's `isRateable` share one rule: flight/stay/transport/activity, not idea/skipped/cancelled.
+- Design system: updated (v6), canvas updated (v10); see above.
+- Next: Phase 3 is done. **F4.1 agentic trip log research** in a new session. Before that, the user should review the past-trip view in the browser (`uv run python -m controltower.demo`, then open "Lisbon (demo)").

@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from controltower.api.deps import OwnerDep, SessionDep, not_found, unprocessable
 from controltower.api.routes.items import DETAIL_KINDS
+from controltower.api.routes.reflection import my_feedback
 from controltower.api.schemas import (
     DayRead,
     ListingRead,
@@ -37,6 +38,7 @@ def read_timeline(trip_id: UUID, session: SessionDep, owner: OwnerDep) -> Timeli
     ).one_or_none()
     if trip is None:
         raise not_found("trip")
+    feedback = my_feedback(session, owner, (i.id for i in trip.items))
     try:
         timeline = build_timeline(trip)
     except TimelineTooLongError as err:
@@ -56,10 +58,13 @@ def read_timeline(trip_id: UUID, session: SessionDep, owner: OwnerDep) -> Timeli
                 title=day.extras.title if day.extras else None,
                 city=day.extras.city if day.extras else None,
                 summary=day.extras.summary if day.extras else None,
-                items=[ListingRead(role=li.role, item=item_read(li.item)) for li in day.listings],
+                items=[
+                    ListingRead(role=li.role, item=item_read(li.item, feedback.get(li.item.id)))
+                    for li in day.listings
+                ],
                 log=[LogEntryRead.model_validate(e) for e in day.log],
             )
             for day in timeline.days
         ],
-        unscheduled=[item_read(i) for i in timeline.unscheduled],
+        unscheduled=[item_read(i, feedback.get(i.id)) for i in timeline.unscheduled],
     )

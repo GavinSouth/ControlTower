@@ -2,7 +2,7 @@
 
 A trip tracking app. ControlTower keeps your past and upcoming trips organized and broken down day by day: each **trip** holds **days**, and each day holds **items** such as flights, stays, activities, transport, and notes. Later, an agent will keep a running **trip log** ("minutes") of where you are and what you're doing. Automatic flight lookup (SerpApi) is a low-priority extra at the end of the roadmap; flights are entered by hand until then.
 
-**Status:** the **web app** covers the whole trip (F3.1 + F3.2). Create trips with a destination ("Shinjuku, Japan" or just "Japan"), add flights, stays, transport, activities, and notes, and see each trip day by day. Each day can have a title, city, and summary, and you can keep a trip log (check-ins, notes) on any day. A **Places** page manages saved airports, hotels, and sights. The backend core (data model, database, API, timeline) was finished in Phase 2. See *Run the app*. Design: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (entities, day-by-day timeline rule, DB conventions, API draft). Next: **F3.4**, the past trip record (reflection, 👍/👎/♥ item feedback, derived stats, a journal-style view), designed in F3.3: see the *Past trip record* section of ARCHITECTURE and the mockup [docs/mockups/past-trip.html](docs/mockups/past-trip.html). Its visual spec is a Claude Design canvas, built on the ControlTower design system (both linked from ARCHITECTURE). Then Phase 4, agentic features: the trip log (F4.1) and location- and season-aware recommendations (F4.3). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
+**Status:** Phase 3 (web app) is done. Create trips with a destination ("Shinjuku, Japan" or just "Japan"), add flights, stays, transport, activities, and notes, and see each trip day by day, with day titles, summaries, and a trip log. A **Places** page manages saved airports, hotels, and sights. Once a trip is over it becomes a **past trip record** (F3.4): it opens as a journal with a cover, derived stats (nights, cities, countries, flights, spend per currency, season), favourite moments, and 👍/👎/♥ on each item. A "How was it?" prompt asks for a reflection (1–5 stars, highlight, would you go back, tags, who you went with, notes). The Plan view stays one toggle away. Design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (data model, timeline rule, past trip record, and links to the Claude Design system and canvas). Next: Phase 4, agentic features: trip log research (F4.1), then location- and season-aware recommendations grounded in your past-trip feedback (F4.3). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
 
 ## How a trip is organized (planned)
 ```
@@ -57,7 +57,7 @@ Two terminals:
 ```bash
 # 1. API (from backend/)
 uv run alembic upgrade head          # once, and after pulling new migrations
-uv run python -m controltower.demo   # optional: add a "Japan (demo)" trip to explore
+uv run python -m controltower.demo   # optional: add "Japan (demo)" (upcoming) and "Lisbon (demo)" (past, not yet reflected)
 uv run uvicorn controltower.api.app:app --reload
 
 # 2. Web (from web/)
@@ -76,7 +76,8 @@ On `/docs` you can try every endpoint in the browser ("Try it out"). A good firs
 2. `POST /places` to add an airport or hotel.
 3. `POST /trips/{trip_id}/items` with a `kind` (flight, stay, transport, activity, note).
 4. `GET /trips/{trip_id}` to see the computed dates and phase.
-5. `GET /trips/{trip_id}/timeline` to see the trip day by day: each item on every day it touches, tagged `starts` / `continues` / `ends` / `single`.
+5. `GET /trips/{trip_id}/timeline` to see the trip day by day: each item on every day it touches, tagged `starts` / `continues` / `ends` / `single`, with your feedback on it.
+6. For a past trip: `PUT /trips/{trip_id}/reflection` (rating, highlight, tags…), `PUT /items/{item_id}/feedback` (`verdict` up/down, `favourite`, `review`), `GET /trips/{trip_id}/stats`, and `GET /favourites?country=PT&category=food`.
 
 Times accept any offset (e.g. `2027-04-05T11:05:00-07:00`) and come back in UTC.
 
@@ -96,7 +97,7 @@ npm run gen:api                                                  # after an API 
 
 ## Project layout
 ```
-backend/            Python package (src/controltower: models/, api/, trips.py, timeline.py, demo.py, db.py, config.py), migrations/ (Alembic), tests/
+backend/            Python package (src/controltower: models/, api/, trips.py, timeline.py, stats.py, demo.py, db.py, config.py), migrations/ (Alembic), tests/
 web/                React app (src/api, src/lib, src/components, src/pages), openapi.json
 docs/               ARCHITECTURE.md (data model), mockups/ (static design mockups), HISTORY_P<phase>.md (context log per phase), python_research.md (tooling notes)
 .github/workflows/  CI

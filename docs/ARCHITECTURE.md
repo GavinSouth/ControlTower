@@ -315,20 +315,23 @@ Computed from items (cancelled ones ignored), places, and dates:
 | Who do I travel with most? | count of `companions` across reflections |
 | **Recommendations (F4.3)** | A **taste profile**: liked / disliked / skipped categories, tags of highly rated trips, and the review text as-is for the LLM. Assembled by the backend and handed to the agent, so the agent never runs SQL. |
 
-### API (to build in F3.4)
+### API (built in F3.4)
 ```
-GET/PUT/DELETE   /trips/{trip_id}/reflection   my reflection (PUT replaces it; 404 if none yet)
-PUT/DELETE       /items/{item_id}/feedback     my verdict / favourite / review for one item
+GET/PUT/DELETE   /trips/{trip_id}/reflection   my reflection (PUT replaces it; GET 404 if none yet; DELETE idempotent)
+PUT/DELETE       /items/{item_id}/feedback     my verdict / favourite / review (PUT returns null when it leaves nothing to keep)
 GET              /trips/{trip_id}/stats        derived stats (above)
+GET              /favourites?country=&kind=&category=   items I ♥'d across trips
 ```
+- Code: `models/reflection.py` (tables), `stats.py` (pure `trip_stats()`), `api/routes/reflection.py` (endpoints), migration `7214a9969f07`.
 - The timeline's items gain a `feedback` field (mine, or null), so the journal view needs one request.
-- Trip reads gain `reflected: bool`, so the trip list can badge past trips that are waiting for a reflection.
-- Cross-trip queries (favourites, skips) start as `GET /favourites?country=&kind=&category=`. Anything wider waits for the F4.3 taste profile.
+- Trip reads gain `reflection: {rating, highlight} | null` (changed from the planned `reflected: bool` in F3.4: the trip list card shows the stars and the start of the highlight, and a bool would have meant one extra request per card).
+- Cross-trip queries (favourites, skips) start as `GET /favourites?country=&kind=&category=`, filtered in Python (P5). Anything wider waits for the F4.3 taste profile.
 
-### Web (to build in F3.4)
+### Web (built in F3.4)
 - A past trip's page opens in **record mode**: cover → stats strip → reflection → favourite moments → days as journal (summary and log first, items compact with 👍/👎/♥). The planning view stays one toggle away.
 - **Prompt:** a banner on past trips with no reflection; a "Reflect" dialog (rating, highlight, would return, tags, companions, notes). Feedback buttons work inline on each item.
-- **Demo:** a second seeded trip, "Lisbon (demo)", May 2025, already past, half reflected, so both states can be reviewed.
+- **Demo:** a second seeded trip, "Lisbon (demo)", May 2025, already past. About half its items have feedback and it has **no trip reflection yet**, so it opens on the "How was it?" prompt and you can reflect on it yourself to see the reflected state.
+- Code: `components/TripRecord.tsx` (record view), `ReflectForm.tsx`, `FeedbackButtons.tsx`, `Stars.tsx`, `ListInput.tsx` (chips), `icons.tsx`; pure rules in `lib/record.ts` (each item once on its first day, favourites, rated count, stats text). `TripPage` holds the Record/Plan toggle; `TripsPage` cards prompt or show stars.
 
 ### Design (Claude Design, 2026-10-21; reviewed 2026-10-22)
 The F3.4 design canvas replaces the F3.3 HTML mockup as the visual spec: [Past Trip Record (F3.4)](https://claude.ai/artifact/TrsVJXeop1z8QH6Bh887wn). It has five artboards:
@@ -350,7 +353,7 @@ Design decisions (settled with the user on 2026-10-22):
   - 👍 and 👎 are one verdict, so picking one clears the other. ♥ is independent.
 - **Skipped items** show a "skipped" pill and no feedback buttons. The skip itself is the signal.
 - **Stars are `teal-700`**, not gold. That keeps one accent; amber already means "changed from plan".
-- **Typeface:** **serif journal voice (user's choice).** Day summaries, log entries and the highlight quote use a new `font-serif` token (system serif stack); everything else stays the system sans.
+- **Typeface:** **serif journal voice (user's choice).** Journal text uses Tailwind's `font-serif` (system serif stack: `ui-serif, Georgia, …`): the cover title, highlight quote, day titles and summaries, log text, reviews and reflection notes. Labels, buttons, times and stats stay the system sans.
 - **Trip list:** a past trip without a reflection gets a teal border and "How was it? Reflect on this trip →". A reflected one shows its stars and the start of its highlight.
 
 ## Scaling up later (no reshaping needed)

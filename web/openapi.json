@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ControlTower API",
-    "description": "Trips broken down day by day: trips, items, places, day extras, trip log.",
+    "description": "Trips broken down day by day: trips, items, places, day extras, trip log, and the past trip record (reflection, item feedback, stats, favourites).",
     "version": "0.1.0"
   },
   "paths": {
@@ -1237,6 +1237,363 @@
         }
       }
     },
+    "/trips/{trip_id}/reflection": {
+      "get": {
+        "tags": [
+          "past trips"
+        ],
+        "summary": "Read Reflection",
+        "description": "404 until I've reflected on the trip.",
+        "operationId": "read_reflection_trips__trip_id__reflection_get",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReflectionRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "past trips"
+        ],
+        "summary": "Put Reflection",
+        "description": "Create or replace my reflection: fields left out are cleared.",
+        "operationId": "put_reflection_trips__trip_id__reflection_put",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReflectionWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReflectionRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "past trips"
+        ],
+        "summary": "Delete Reflection",
+        "description": "Idempotent: deleting a reflection that doesn't exist is fine.",
+        "operationId": "delete_reflection_trips__trip_id__reflection_delete",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/items/{item_id}/feedback": {
+      "put": {
+        "tags": [
+          "past trips"
+        ],
+        "summary": "Put Feedback",
+        "description": "Replace my \ud83d\udc4d/\ud83d\udc4e, \u2665 and review. Returns null when that leaves nothing to keep.",
+        "operationId": "put_feedback_items__item_id__feedback_put",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemFeedbackWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ItemFeedbackRead"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Put Feedback Items  Item Id  Feedback Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "past trips"
+        ],
+        "summary": "Delete Feedback",
+        "operationId": "delete_feedback_items__item_id__feedback_delete",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{trip_id}/stats": {
+      "get": {
+        "tags": [
+          "past trips"
+        ],
+        "summary": "Read Stats",
+        "description": "Derived on every read: nights, cities, countries, flights, spend, season, feedback.",
+        "operationId": "read_stats_trips__trip_id__stats_get",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripStatsRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/favourites": {
+      "get": {
+        "tags": [
+          "past trips"
+        ],
+        "summary": "List Favourites",
+        "description": "Items I \u2665'd across all trips, most recent first (untimed last).\n\nFilters: the place's country (\"JP\"), item kind, activity category (\"food\").",
+        "operationId": "list_favourites_favourites_get",
+        "parameters": [
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Country"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ItemKind"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FavouriteRead"
+                  },
+                  "title": "Response List Favourites Favourites Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -1939,6 +2296,17 @@
             ],
             "title": "Notes"
           },
+          "feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemFeedbackRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "My \ud83d\udc4d/\ud83d\udc4e/\u2665/review; filled in on the timeline and favourites"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -2053,6 +2421,101 @@
           "log"
         ],
         "title": "DayRead"
+      },
+      "FavouriteRead": {
+        "properties": {
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "trip_title": {
+            "type": "string",
+            "title": "Trip Title"
+          },
+          "item": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FlightRead"
+              },
+              {
+                "$ref": "#/components/schemas/StayRead"
+              },
+              {
+                "$ref": "#/components/schemas/TransportRead"
+              },
+              {
+                "$ref": "#/components/schemas/ActivityRead"
+              },
+              {
+                "$ref": "#/components/schemas/NoteRead"
+              }
+            ],
+            "title": "Item",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "activity": "#/components/schemas/ActivityRead",
+                "flight": "#/components/schemas/FlightRead",
+                "note": "#/components/schemas/NoteRead",
+                "stay": "#/components/schemas/StayRead",
+                "transport": "#/components/schemas/TransportRead"
+              }
+            }
+          },
+          "place": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "trip_id",
+          "trip_title",
+          "item",
+          "place"
+        ],
+        "title": "FavouriteRead"
+      },
+      "FeedbackCountsRead": {
+        "properties": {
+          "up": {
+            "type": "integer",
+            "title": "Up"
+          },
+          "down": {
+            "type": "integer",
+            "title": "Down"
+          },
+          "favourite": {
+            "type": "integer",
+            "title": "Favourite"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "Skipped"
+          },
+          "pending": {
+            "type": "integer",
+            "title": "Pending",
+            "description": "Items that could still get \ud83d\udc4d/\ud83d\udc4e (drives the prompt)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "up",
+          "down",
+          "favourite",
+          "skipped",
+          "pending"
+        ],
+        "title": "FeedbackCountsRead"
       },
       "FlightCreate": {
         "properties": {
@@ -2953,6 +3416,17 @@
             ],
             "title": "Notes"
           },
+          "feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemFeedbackRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "My \ud83d\udc4d/\ud83d\udc4e/\u2665/review; filled in on the timeline and favourites"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -3007,6 +3481,96 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "ItemFeedbackRead": {
+        "properties": {
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Verdict"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "favourite": {
+            "type": "boolean",
+            "title": "Favourite"
+          },
+          "review": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "verdict",
+          "favourite",
+          "review",
+          "updated_at"
+        ],
+        "title": "ItemFeedbackRead"
+      },
+      "ItemFeedbackWrite": {
+        "properties": {
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Verdict"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "up = \ud83d\udc4d, down = \ud83d\udc4e"
+          },
+          "favourite": {
+            "type": "boolean",
+            "title": "Favourite",
+            "description": "\u2665: a highlight to resurface",
+            "default": false
+          },
+          "review": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ItemFeedbackWrite",
+        "description": "PUT replaces my feedback. Nothing set (no verdict, no \u2665, no review) deletes it."
+      },
+      "ItemKind": {
+        "type": "string",
+        "enum": [
+          "flight",
+          "stay",
+          "transport",
+          "activity",
+          "note"
+        ],
+        "title": "ItemKind"
       },
       "ItemStatus": {
         "type": "string",
@@ -3983,6 +4547,17 @@
             ],
             "title": "Notes"
           },
+          "feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemFeedbackRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "My \ud83d\udc4d/\ud83d\udc4e/\u2665/review; filled in on the timeline and favourites"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -4339,6 +4914,217 @@
         ],
         "title": "PlaceRead"
       },
+      "ReflectionBrief": {
+        "properties": {
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "highlight": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highlight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rating",
+          "highlight"
+        ],
+        "title": "ReflectionBrief"
+      },
+      "ReflectionRead": {
+        "properties": {
+          "trip_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Trip Id"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "highlight": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highlight"
+          },
+          "would_return": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Would Return"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "companions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Companions"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trip_id",
+          "rating",
+          "highlight",
+          "would_return",
+          "tags",
+          "companions",
+          "notes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ReflectionRead"
+      },
+      "ReflectionWrite": {
+        "properties": {
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating",
+            "description": "1-5 stars"
+          },
+          "highlight": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highlight",
+            "examples": [
+              "Sunset at Miradouro"
+            ]
+          },
+          "would_return": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Would Return",
+            "description": "null = unsure"
+          },
+          "tags": {
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Tags",
+            "examples": [
+              [
+                "food",
+                "slow travel"
+              ]
+            ]
+          },
+          "companions": {
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Companions",
+            "examples": [
+              [
+                "Sam"
+              ]
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ReflectionWrite",
+        "description": "PUT replaces my whole reflection; every field is optional (P7)."
+      },
       "Role": {
         "type": "string",
         "enum": [
@@ -4348,6 +5134,16 @@
           "ends"
         ],
         "title": "Role"
+      },
+      "Season": {
+        "type": "string",
+        "enum": [
+          "winter",
+          "spring",
+          "summer",
+          "autumn"
+        ],
+        "title": "Season"
       },
       "StayCreate": {
         "properties": {
@@ -5103,6 +5899,17 @@
               }
             ],
             "title": "Notes"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemFeedbackRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "My \ud83d\udc4d/\ud83d\udc4e/\u2665/review; filled in on the timeline and favourites"
           },
           "created_at": {
             "type": "string",
@@ -5954,6 +6761,17 @@
             ],
             "title": "Notes"
           },
+          "feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemFeedbackRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "My \ud83d\udc4d/\ud83d\udc4e/\u2665/review; filled in on the timeline and favourites"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -6345,6 +7163,17 @@
           "phase": {
             "$ref": "#/components/schemas/TripPhase"
           },
+          "reflection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReflectionBrief"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "My reflection's rating and highlight, for the trip list; null if none yet"
+          },
           "home_tz": {
             "type": "string",
             "title": "Home Tz"
@@ -6385,6 +7214,7 @@
           "first_day",
           "last_day",
           "phase",
+          "reflection",
           "home_tz",
           "cancelled",
           "notes",
@@ -6392,6 +7222,73 @@
           "updated_at"
         ],
         "title": "TripRead"
+      },
+      "TripStatsRead": {
+        "properties": {
+          "nights": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nights"
+          },
+          "cities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cities"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Countries",
+            "description": "ISO 3166-1 alpha-2 codes"
+          },
+          "flights": {
+            "type": "integer",
+            "title": "Flights"
+          },
+          "spend": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Spend",
+            "description": "Total per currency; no conversion"
+          },
+          "season": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Season"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Of the middle date; southern hemisphere flipped"
+          },
+          "feedback": {
+            "$ref": "#/components/schemas/FeedbackCountsRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nights",
+          "cities",
+          "countries",
+          "flights",
+          "spend",
+          "season",
+          "feedback"
+        ],
+        "title": "TripStatsRead"
       },
       "ValidationError": {
         "properties": {
@@ -6432,6 +7329,14 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "Verdict": {
+        "type": "string",
+        "enum": [
+          "up",
+          "down"
+        ],
+        "title": "Verdict"
       }
     }
   }

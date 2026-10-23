@@ -3,11 +3,13 @@ import { api, unwrap } from './client'
 import type {
   DayWrite,
   ItemCreate,
+  ItemFeedbackWrite,
   ItemPatch,
   LogEntryCreate,
   LogEntryPatch,
   PlaceCreate,
   PlacePatch,
+  ReflectionWrite,
   TripCreate,
   TripPatch,
 } from './types'
@@ -17,6 +19,8 @@ export const keys = {
   trips: ['trips'] as const,
   trip: (id: string) => ['trips', id] as const,
   timeline: (id: string) => ['trips', id, 'timeline'] as const,
+  reflection: (id: string) => ['trips', id, 'reflection'] as const,
+  stats: (id: string) => ['trips', id, 'stats'] as const,
   places: (q: string) => ['places', q] as const,
 }
 
@@ -185,6 +189,49 @@ export function useDeletePlace() {
   return useMutation({
     mutationFn: async (placeId: string) =>
       unwrap(await api.DELETE('/places/{place_id}', { params: { path: { place_id: placeId } } })),
+    onSuccess: invalidate,
+  })
+}
+
+// --- Past trip record (F3.4) --------------------------------------------------
+
+/** My reflection on a trip, or null before I've written one (the API answers 404). */
+export function useReflection(tripId: string, enabled = true) {
+  return useQuery({
+    queryKey: keys.reflection(tripId),
+    enabled,
+    queryFn: async () => {
+      const result = await api.GET('/trips/{trip_id}/reflection', { params: { path: { trip_id: tripId } } })
+      return result.response.status === 404 ? null : unwrap(result)
+    },
+  })
+}
+
+/** PUT replaces the whole reflection, so fields left empty clear. */
+export function useSaveReflection(tripId: string) {
+  const invalidate = useInvalidateTrips()
+  return useMutation({
+    mutationFn: async (body: ReflectionWrite) =>
+      unwrap(await api.PUT('/trips/{trip_id}/reflection', { params: { path: { trip_id: tripId } }, body })),
+    onSuccess: invalidate,
+  })
+}
+
+export function useTripStats(tripId: string, enabled = true) {
+  return useQuery({
+    queryKey: keys.stats(tripId),
+    enabled,
+    queryFn: async () =>
+      unwrap(await api.GET('/trips/{trip_id}/stats', { params: { path: { trip_id: tripId } } })),
+  })
+}
+
+/** My 👍/👎/♥ on one item. Refreshes the trip's timeline and stats (counts, favourites). */
+export function useSaveFeedback() {
+  const invalidate = useInvalidateTrips()
+  return useMutation({
+    mutationFn: async ({ itemId, body }: { itemId: string; body: ItemFeedbackWrite }) =>
+      unwrap(await api.PUT('/items/{item_id}/feedback', { params: { path: { item_id: itemId } }, body })),
     onSuccess: invalidate,
   })
 }

@@ -19,7 +19,7 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
 - [x] F2.2 Trip API: create/read/update/delete trips, days, and items. FastAPI app in `backend/src/controltower/api/` (trips, items, places, day extras, log); interactive docs at `localhost:8000/docs`; 34 tests.
 - [x] F2.3 Day-by-day timeline endpoint (a trip's items grouped per local day). `GET /trips/{id}/timeline` built on the pure `build_timeline()`; 47 tests.
 
-## Phase 3 — Web Frontend  [IN PROGRESS]
+## Phase 3 — Web Frontend  [DONE]
 - [x] F3.1 Trip list, trip timeline view, add/edit items. **First reviewable local web app.** React + TypeScript + Vite + Tailwind in `web/`; types generated from the API's OpenAPI schema; demo trip seeder; CI web job.
 - [x] F3.2 Trip details & polish from the F3.1 review:
   - **Trip location** (user request): an optional destination field when creating or editing a trip, at any level of detail, e.g. "Shinjuku, Japan" or just "Japan". It shows on trip cards and the trip header. Needs a new `trip` column + Alembic migration, API and schema updates, `npm run gen:api`, and the TripForm field. Decided: **free text** (an LLM reads it as-is; any geocoding is decided in F4.1/F4.3).
@@ -33,7 +33,7 @@ Earlier scopes (live flight tracking via OpenSky; fare comparison via SerpApi/Du
     - Derived stats (computed, never stored): nights, cities, countries, flights, spend per currency, season.
   - Which queries it must answer, e.g. "favourite food spots in Japan", "trips I rated 5 in spring", "what do I usually skip".
   - Output: a section in `docs/ARCHITECTURE.md` + the mockup, reviewed before F3.4.
-- [ ] F3.4 Past trip record: build (scoped by F3.3, see ARCHITECTURE *Past trip record*; visual spec: the Claude Design canvas linked there, reviewed before building). `trip_reflection` + `item_feedback` tables + migration, API (reflection, item feedback, stats, favourites), past-trip view in the web app, reflection prompts when a trip ends, and a second demo trip that is already past (e.g. Lisbon 2025) for review.
+- [x] F3.4 Past trip record: build (scoped by F3.3, see ARCHITECTURE *Past trip record*; visual spec: the Claude Design canvas linked there, reviewed before building). `trip_reflection` + `item_feedback` tables + migration, API (reflection, item feedback, stats, favourites), past-trip view in the web app, reflection prompts when a trip ends, and a second demo trip that is already past (e.g. Lisbon 2025) for review.
 
 ## Phase 4 — Agentic Trip Log & Recommendations  [NOT STARTED]
 The goal is an agentic process across the whole app: agents read the trip data (location, dates, items, log) and act on it.

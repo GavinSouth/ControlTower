@@ -32,3 +32,10 @@ export type LogEntry = Schemas['LogEntryRead']
 export type LogEntryCreate = Schemas['LogEntryCreate']
 export type LogEntryPatch = Schemas['LogEntryPatch']
 export type LogKind = LogEntry['kind']
+
+export type Reflection = Schemas['ReflectionRead']
+export type ReflectionWrite = Schemas['ReflectionWrite']
+export type ItemFeedback = Schemas['ItemFeedbackRead']
+export type ItemFeedbackWrite = Schemas['ItemFeedbackWrite']
+export type Verdict = NonNullable<ItemFeedback['verdict']>
+export type TripStats = Schemas['TripStatsRead']

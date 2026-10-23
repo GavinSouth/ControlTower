@@ -49,3 +49,8 @@ class LogKind(StrEnum):
     DEPARTURE = "departure"
     NOTE = "note"
     SUMMARY = "summary"
+
+
+class Verdict(StrEnum):
+    UP = "up"
+    DOWN = "down"
