@@ -176,3 +176,11 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
 
 - Asked: start the app for a look. Ran `alembic upgrade head` (already current), then started uvicorn :8000 + Vite :5173 in the background; `/api/health` ok and "Japan (demo)" listed through the proxy.
 - Asked: is the past-trip work done? It is not in the app. Answered: no. F3.3 was design only; the build is F3.4, not started (waiting on the canvas review).
+
+### F3.4 — Past trip record: build started (2026-10-22)
+- Asked: `--resume`. The canvas and design system had no comments, so the four open decisions were asked directly. Answers:
+  1. Journal voice: **serif** (day summaries, log, highlight quote). New `font-serif` token.
+  2. Feedback colours: **red ♥ and red 👎** (user overrode the teal ♥ / neutral 👎 proposal). 👍 stays teal; stars stay teal.
+  3. Record/Plan toggle + solid teal cover: **kept**.
+  4. Skipped items: **no feedback buttons**.
+- Recorded in `docs/ARCHITECTURE.md` → *Past trip record → Design*. The canvas and design system still show the old choices; both get updated during F3.4, before `/finish-feature`.

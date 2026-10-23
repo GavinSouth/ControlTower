@@ -330,7 +330,7 @@ GET              /trips/{trip_id}/stats        derived stats (above)
 - **Prompt:** a banner on past trips with no reflection; a "Reflect" dialog (rating, highlight, would return, tags, companions, notes). Feedback buttons work inline on each item.
 - **Demo:** a second seeded trip, "Lisbon (demo)", May 2025, already past, half reflected, so both states can be reviewed.
 
-### Design (Claude Design, 2026-10-21; pending review)
+### Design (Claude Design, 2026-10-21; reviewed 2026-10-22)
 The F3.4 design canvas replaces the F3.3 HTML mockup as the visual spec: [Past Trip Record (F3.4)](https://claude.ai/artifact/TrsVJXeop1z8QH6Bh887wn). It has five artboards:
 1. the trip list;
 2. the trip right after it ends;
@@ -340,17 +340,17 @@ The F3.4 design canvas replaces the F3.3 HTML mockup as the visual spec: [Past T
 
 It uses the [ControlTower design system](https://claude.ai/artifact/U3TJjZ1ABvNMs8xPzNczwL). Both artifacts are private to the owner.
 
-Design decisions (proposed, for review):
+Design decisions (settled with the user on 2026-10-22):
 - **Record / Plan toggle** at the top of a past trip. Record is the default once a trip is past; Plan is today's day-card view.
 - **Cover** is a solid `teal-700` card: eyebrow, title, location · dates · companions, stars, and the highlight as a quote. It's the one bold block on the page.
 - **Stats strip:** 6 cells on desktop, 3×2 on a phone.
 - **Feedback buttons:**
   - inline stroke-SVG icons (36px desktop, 44px phone). These are the app's first SVG icons; kind icons stay emoji.
-  - 👍 on = `teal-50`/`teal-800`; 👎 on = neutral `stone-100`/`stone-900`, because red means errors only; ♥ on = filled `teal-700`.
+  - 👍 on = `teal-50`/`teal-800`; 👎 on = `red-50`/`red-700`; ♥ on = filled `red-600`. **User's choice:** red for ♥ and 👎 (the canvas proposed teal ♥ and a neutral 👎). Red now also means "disliked"; error messages stay distinguishable because they are text, not icon buttons.
   - 👍 and 👎 are one verdict, so picking one clears the other. ♥ is independent.
 - **Skipped items** show a "skipped" pill and no feedback buttons. The skip itself is the signal.
 - **Stars are `teal-700`**, not gold. That keeps one accent; amber already means "changed from plan".
-- **Typeface:** stays the system sans. The canvas has a `voice` tweak (sans / serif) on the record artboard to try a serif "journal" voice. If chosen, it becomes a new `font-serif` token in the design system.
+- **Typeface:** **serif journal voice (user's choice).** Day summaries, log entries and the highlight quote use a new `font-serif` token (system serif stack); everything else stays the system sans.
 - **Trip list:** a past trip without a reflection gets a teal border and "How was it? Reflect on this trip →". A reflected one shows its stars and the start of its highlight.
 
 ## Scaling up later (no reshaping needed)
