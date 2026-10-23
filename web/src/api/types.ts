@@ -6,6 +6,7 @@ export type Trip = Schemas['TripRead']
 export type TripCreate = Schemas['TripCreate']
 export type TripPatch = Schemas['TripPatch']
 export type TripPhase = Trip['phase']
+export type Photo = Schemas['PhotoRead']
 
 export type Place = Schemas['PlaceRead']
 export type PlaceCreate = Schemas['PlaceCreate']

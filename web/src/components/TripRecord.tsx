@@ -4,6 +4,7 @@ import type { Item, Reflection, Timeline, Trip } from '../api/types'
 import { ICONS, subtitle, whenLabel } from '../lib/listing'
 import { favourites, isRateable, journalDays, ratedCount, statCells } from '../lib/record'
 import { formatDay, formatRange, formatTime } from '../lib/time'
+import { CoverImage, CoverPhotoControls } from './CoverPhoto'
 import { FeedbackButtons } from './FeedbackButtons'
 import { HeartIcon } from './icons'
 import { ReflectForm } from './ReflectForm'
@@ -50,24 +51,38 @@ function Cover({ trip, timeline, nights, reflection }: { trip: Trip; timeline: T
     formatRange(timeline.first_day, timeline.last_day),
     reflection?.companions.length ? `with ${reflection.companions.join(', ')}` : null,
   ].filter(Boolean)
+  // With a photo: the text sits at the bottom over a scrim. Without: the solid teal cover.
+  const photo = trip.cover
+  const soft = photo ? 'text-white/85' : 'text-teal-100'
   return (
-    <section aria-label="Cover" className="rounded-xl bg-teal-700 p-6 text-white sm:p-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="text-xs font-semibold tracking-wide text-teal-100 uppercase">
-            Past trip{nights !== null && ` · ${nights} ${nights === 1 ? 'night' : 'nights'}`}
-          </div>
-          <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">{trip.title}</h1>
-          <p className="mt-2 text-teal-50">{line.join(' · ')}</p>
-        </div>
-        {reflection?.rating && <Stars rating={reflection.rating} size={22} />}
+    <section
+      aria-label="Cover"
+      className={`relative overflow-hidden rounded-xl bg-teal-700 text-white ${
+        photo ? 'flex min-h-72 flex-col justify-end sm:min-h-96' : ''
+      }`}
+    >
+      {photo && <CoverImage photo={photo} sizes="(min-width: 1024px) 960px, 100vw" />}
+      <div className="absolute top-3 right-3 z-10">
+        <CoverPhotoControls trip={trip} variant="overlay" />
       </div>
-      {reflection?.highlight && (
-        <figure className="mt-6 border-t border-teal-800 pt-5">
-          <blockquote className="font-serif text-xl leading-relaxed">“{reflection.highlight}”</blockquote>
-          <figcaption className="mt-2 text-xs font-semibold tracking-wide text-teal-100 uppercase">Highlight</figcaption>
-        </figure>
-      )}
+      <div className="relative p-6 pt-14 sm:p-8 sm:pt-14">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className={`text-xs font-semibold tracking-wide uppercase ${soft}`}>
+              Past trip{nights !== null && ` · ${nights} ${nights === 1 ? 'night' : 'nights'}`}
+            </div>
+            <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">{trip.title}</h1>
+            <p className={`mt-2 ${photo ? 'text-white/90' : 'text-teal-50'}`}>{line.join(' · ')}</p>
+          </div>
+          {reflection?.rating && <Stars rating={reflection.rating} size={22} />}
+        </div>
+        {reflection?.highlight && (
+          <figure className={`mt-6 border-t pt-5 ${photo ? 'border-white/25' : 'border-teal-800'}`}>
+            <blockquote className="font-serif text-xl leading-relaxed">“{reflection.highlight}”</blockquote>
+            <figcaption className={`mt-2 text-xs font-semibold tracking-wide uppercase ${soft}`}>Highlight</figcaption>
+          </figure>
+        )}
+      </div>
     </section>
   )
 }

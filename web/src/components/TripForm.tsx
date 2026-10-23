@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { useCreateTrip, useDeleteTrip, useUpdateTrip } from '../api/hooks'
 import type { Trip } from '../api/types'
 import { browserZone } from '../lib/time'
+import { CoverPhotoControls } from './CoverPhoto'
 import { Button, ErrorText, Field, inputClass, TimeZoneInput } from './ui'
 
 /** Create a trip (no `trip`) or edit/delete an existing one. */
@@ -69,6 +70,8 @@ export function TripForm({ trip, onDone }: { trip?: Trip; onDone: () => void }) 
       <Field label="Notes">
         <textarea className={inputClass} rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
+      {/* Saved on its own (an upload), not with the form; a new trip gets one once it exists. */}
+      {trip && <CoverPhotoControls trip={trip} variant="form" />}
       {trip && (
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={cancelled} onChange={(e) => setCancelled(e.target.checked)} />

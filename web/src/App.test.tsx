@@ -15,6 +15,7 @@ const trip = (overrides: Partial<Trip>): Trip => ({
   last_day: '2027-04-08',
   phase: 'upcoming',
   reflection: null,
+  cover: null,
   home_tz: 'Asia/Tokyo',
   cancelled: false,
   notes: null,
@@ -39,13 +40,18 @@ const timeline: Timeline = {
 
 /** A fake backend: route → JSON. Records requests so tests can assert on them. */
 function fakeApi(routes: Record<string, unknown>) {
-  const requests: { method: string; path: string; body: unknown }[] = []
+  const requests: { method: string; path: string; body: unknown; contentType: string | null }[] = []
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: Request) => {
       const path = new URL(input.url).pathname.replace(/^\/api/, '')
-      const body = input.method === 'GET' ? undefined : await input.json()
-      requests.push({ method: input.method, path, body })
+      const contentType = input.headers.get('content-type')
+      const body = contentType?.startsWith('multipart/')
+        ? await input.text()
+        : input.method === 'GET' || input.method === 'DELETE'
+          ? undefined
+          : await input.json()
+      requests.push({ method: input.method, path, body, contentType })
       const key = `${input.method} ${path}`
       const data = key in routes ? routes[key] : routes[path]
       return data === undefined
@@ -226,5 +232,56 @@ describe('App', () => {
     expect(within(past).getByText('How was it? Reflect on this trip →')).toBeInTheDocument()
     expect(within(past).getByRole('img', { name: 'Rated 5 of 5' })).toBeInTheDocument()
     expect(within(past).getByText('“Port at sunset”')).toBeInTheDocument()
+  })
+
+  it('shows cover photos on trip cards, with the copy sized for the card', async () => {
+    const covered = trip({ id: 't4', title: 'Kyoto', cover: { id: 'ph1', width: 2400, height: 1600 } })
+    fakeApi({ '/trips': [covered, lisbon] })
+    renderApp()
+    await screen.findByText('Kyoto')
+    const strips = screen.getAllByTestId('cover-strip')
+    expect(strips).toHaveLength(1) // Lisbon has no cover: no strip
+    const img = strips[0].querySelector('img')
+    expect(img).toHaveAttribute('srcset', expect.stringContaining('/api/photos/ph1/sm 400w'))
+    expect(img).toHaveAttribute('loading', 'lazy')
+  })
+
+  it('uploads a cover photo from the past-trip cover, as form data', async () => {
+    const pastTimeline: Timeline = { ...timeline, trip_id: 't2', phase: 'past', days: [] }
+    const stats = {
+      nights: 0, cities: [], countries: [], flights: 0, spend: {}, season: null,
+      feedback: { up: 0, down: 0, favourite: 0, skipped: 0, pending: 0 },
+    }
+    const covered = { ...lisbon, cover: { id: 'ph2', width: 1200, height: 800 } }
+    const requests = fakeApi({
+      '/trips/t2': lisbon,
+      '/trips/t2/timeline': pastTimeline,
+      '/trips/t2/stats': stats,
+      '/places': [],
+      'PUT /trips/t2/cover': covered,
+    })
+    renderApp('/trips/t2')
+
+    const cover = await screen.findByRole('region', { name: 'Cover' })
+    expect(within(cover).queryByRole('img')).not.toBeInTheDocument() // teal fallback
+    expect(within(cover).getByText('Add cover photo')).toBeInTheDocument()
+
+    // Too big: refused in the browser, nothing sent.
+    const input = within(cover).getByLabelText('Cover photo file')
+    const huge = new File(['x'], 'huge.jpg', { type: 'image/jpeg' })
+    Object.defineProperty(huge, 'size', { value: 21 * 1024 * 1024 })
+    await userEvent.upload(input, huge)
+    expect(within(cover).getByRole('alert')).toHaveTextContent('over 20 MB')
+
+    // The fetch under test is Node's, and its FormData only takes Node's File, not jsdom's;
+    // a FormData round trip makes one (jsdom drops the name on the way; a browser keeps it).
+    const form = new FormData()
+    form.append('file', new Blob(['jpeg'], { type: 'image/jpeg' }), 'beach.jpg')
+    await userEvent.upload(input, form.get('file') as File)
+    await vi.waitFor(() => expect(requests.some((r) => r.method === 'PUT')).toBe(true))
+    const put = requests.find((r) => r.method === 'PUT')
+    expect(put?.path).toBe('/trips/t2/cover')
+    expect(put?.contentType).toMatch(/^multipart\/form-data; boundary=/)
+    expect(put?.body).toContain('Content-Disposition: form-data; name="file"')
   })
 })

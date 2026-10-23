@@ -2,7 +2,7 @@
 
 A trip tracking app. ControlTower keeps your past and upcoming trips organized and broken down day by day: each **trip** holds **days**, and each day holds **items** such as flights, stays, activities, transport, and notes. Later, an agent will keep a running **trip log** ("minutes") of where you are and what you're doing. Automatic flight lookup (SerpApi) is a low-priority extra at the end of the roadmap; flights are entered by hand until then.
 
-**Status:** Phase 3 (web app) is done. Create trips with a destination ("Shinjuku, Japan" or just "Japan"), add flights, stays, transport, activities, and notes, and see each trip day by day, with day titles, summaries, and a trip log. A **Places** page manages saved airports, hotels, and sights. Once a trip is over it becomes a **past trip record** (F3.4): it opens as a journal with a cover, derived stats (nights, cities, countries, flights, spend per currency, season), favourite moments, and 👍/👎/♥ on each item. A "How was it?" prompt asks for a reflection (1–5 stars, highlight, would you go back, tags, who you went with, notes). The Plan view stays one toggle away. Design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (data model, timeline rule, past trip record, and links to the Claude Design system and canvas). Next: Phase 4, agentic features: trip log research (F4.1), then location- and season-aware recommendations grounded in your past-trip feedback (F4.3). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
+**Status:** Phase 3 (web app) is done. Create trips with a destination ("Shinjuku, Japan" or just "Japan"), add flights, stays, transport, activities, and notes, and see each trip day by day, with day titles, summaries, and a trip log. A **Places** page manages saved airports, hotels, and sights. Once a trip is over it becomes a **past trip record** (F3.4): it opens as a journal with a cover, derived stats (nights, cities, countries, flights, spend per currency, season), favourite moments, and 👍/👎/♥ on each item. A "How was it?" prompt asks for a reflection (1–5 stars, highlight, would you go back, tags, who you went with, notes). The Plan view stays one toggle away. In progress (F3.5): a **cover photo** per trip, shown behind the past-trip cover, as a Plan view banner, and as a strip on trip cards. Add, change, or remove it from the cover or the Edit trip dialog. Uploads (JPEG/PNG/WebP/HEIC, ≤20 MB) are resized to WebP and their EXIF/GPS data is removed. Design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (data model, timeline rule, past trip record, and links to the Claude Design system and canvas). Next: Phase 4, agentic features: trip log research (F4.1), then location- and season-aware recommendations grounded in your past-trip feedback (F4.3). See [ROADMAP.md](ROADMAP.md) and [docs/](docs/).
 
 ## How a trip is organized (planned)
 ```
@@ -37,6 +37,7 @@ Items that span days (stays, overnight flights) are stored once and appear on ev
 | CI | GitHub Actions (`.github/workflows/ci.yml`) |
 | Database | SQLite (Postgres-ready) + SQLAlchemy 2.1 + Alembic |
 | HTTP API | FastAPI + Pydantic 2, served by uvicorn |
+| Images | Pillow + pillow-heif (resize to WebP, strip EXIF); files under `backend/data/photos/` |
 | Web app | Node 24, React 19, TypeScript 6, Vite 8, Tailwind 4, TanStack Query, openapi-fetch |
 | Web lint / tests | oxlint, tsc, Vitest + Testing Library |
 | Flight lookup (Phase 7) | SerpApi Google Flights (free tier 250 searches/mo) |
@@ -97,7 +98,7 @@ npm run gen:api                                                  # after an API 
 
 ## Project layout
 ```
-backend/            Python package (src/controltower: models/, api/, trips.py, timeline.py, stats.py, demo.py, db.py, config.py), migrations/ (Alembic), tests/
+backend/            Python package (src/controltower: models/, api/, trips.py, timeline.py, stats.py, photos.py, demo.py, db.py, config.py), migrations/ (Alembic), tests/
 web/                React app (src/api, src/lib, src/components, src/pages), openapi.json
 docs/               ARCHITECTURE.md (data model), mockups/ (static design mockups), HISTORY_P<phase>.md (context log per phase), python_research.md (tooling notes)
 .github/workflows/  CI

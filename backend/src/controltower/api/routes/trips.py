@@ -6,7 +6,7 @@ from fastapi import APIRouter, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from controltower.api.deps import OwnerDep, SessionDep, get_trip, unprocessable
+from controltower.api.deps import OwnerDep, PhotoStoreDep, SessionDep, get_trip, unprocessable
 from controltower.api.routes.reflection import my_reflections
 from controltower.api.schemas import TripCreate, TripPatch, TripRead
 from controltower.models import Trip, TripReflection, User
@@ -24,6 +24,7 @@ def trip_read(trip: Trip, reflection: TripReflection | None) -> TripRead:
             "last_day": last,
             "phase": trip_phase(trip),
             "reflection": reflection,
+            "cover": trip.cover_photo,
         }
     )
 
@@ -39,7 +40,9 @@ def list_trips(
 ) -> list[TripRead]:
     """All trips, soonest first; undated trips last. Optionally filter by phase."""
     trips = session.scalars(
-        select(Trip).where(Trip.owner_id == owner.id).options(selectinload(Trip.items))
+        select(Trip)
+        .where(Trip.owner_id == owner.id)
+        .options(selectinload(Trip.items), selectinload(Trip.cover_photo))
     ).all()
     reflections = my_reflections(session, owner, (t.id for t in trips))
     out = [trip_read(t, reflections.get(t.id)) for t in trips]
@@ -57,13 +60,13 @@ def create_trip(body: TripCreate, session: SessionDep, owner: OwnerDep) -> TripR
     return trip_read(trip, reflection=None)
 
 
-def _trip_read(session: Session, owner: User, trip: Trip) -> TripRead:
+def my_trip_read(session: Session, owner: User, trip: Trip) -> TripRead:
     return trip_read(trip, my_reflections(session, owner, [trip.id]).get(trip.id))
 
 
 @router.get("/{trip_id}")
 def read_trip(trip_id: UUID, session: SessionDep, owner: OwnerDep) -> TripRead:
-    return _trip_read(session, owner, get_trip(session, owner, trip_id))
+    return my_trip_read(session, owner, get_trip(session, owner, trip_id))
 
 
 @router.patch("/{trip_id}")
@@ -73,12 +76,20 @@ def update_trip(trip_id: UUID, body: TripPatch, session: SessionDep, owner: Owne
         setattr(trip, field, value)
     check_dates(trip)
     session.commit()
-    return _trip_read(session, owner, trip)
+    return my_trip_read(session, owner, trip)
 
 
 @router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_trip(trip_id: UUID, session: SessionDep, owner: OwnerDep) -> Response:
-    """Deletes the trip with its items, days, and log entries. Places are kept."""
-    session.delete(get_trip(session, owner, trip_id))
+def delete_trip(
+    trip_id: UUID, session: SessionDep, owner: OwnerDep, store: PhotoStoreDep
+) -> Response:
+    """Deletes the trip with its items, days, log entries, and cover photo. Places are kept."""
+    trip = get_trip(session, owner, trip_id)
+    cover = trip.cover_photo
+    session.delete(trip)
+    if cover is not None:
+        session.delete(cover)
     session.commit()
+    if cover is not None:
+        store.delete(cover.id)  # files only after the commit, so a failed delete keeps them
     return Response(status_code=status.HTTP_204_NO_CONTENT)

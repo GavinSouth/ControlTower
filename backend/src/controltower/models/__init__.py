@@ -11,6 +11,7 @@ from controltower.models.enums import (
 )
 from controltower.models.item import Activity, Flight, Item, Note, Stay, Transport
 from controltower.models.log import LogEntry
+from controltower.models.photo import Photo
 from controltower.models.place import Place
 from controltower.models.reflection import ItemFeedback, TripReflection
 from controltower.models.trip import Trip, TripDay
@@ -28,6 +29,7 @@ __all__ = [
     "LogKind",
     "LogSource",
     "Note",
+    "Photo",
     "Place",
     "Stay",
     "Transport",

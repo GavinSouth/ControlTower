@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useTrips } from '../api/hooks'
 import type { Trip, TripPhase } from '../api/types'
+import { CoverImage } from '../components/CoverPhoto'
 import { Stars } from '../components/Stars'
 import { TripForm } from '../components/TripForm'
 import { Badge, Button, Dialog, ErrorText } from '../components/ui'
@@ -20,10 +21,15 @@ function TripCard({ trip }: { trip: Trip }) {
   return (
     <Link
       to={`/trips/${trip.id}`}
-      className={`flex flex-col rounded-xl border bg-white p-4 transition hover:border-teal-600 hover:shadow-sm ${
+      className={`flex flex-col overflow-hidden rounded-xl border bg-white p-4 transition hover:border-teal-600 hover:shadow-sm ${
         awaiting ? 'border-teal-600' : 'border-stone-200'
       }`}
     >
+      {trip.cover && (
+        <div data-testid="cover-strip" className={`relative -mx-4 -mt-4 mb-3 h-28 bg-stone-200 ${trip.cancelled ? 'opacity-50 grayscale' : ''}`}>
+          <CoverImage photo={trip.cover} sizes="(min-width: 640px) 50vw, 100vw" scrim={false} lazy />
+        </div>
+      )}
       <div className="flex items-start justify-between gap-3">
         <h3 className={`font-semibold ${trip.cancelled ? 'text-stone-400 line-through' : ''}`}>{trip.title}</h3>
         <Badge tone={trip.phase}>{trip.cancelled ? 'cancelled' : trip.phase}</Badge>

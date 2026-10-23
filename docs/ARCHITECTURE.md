@@ -356,6 +356,38 @@ Design decisions (settled with the user on 2026-10-22):
 - **Typeface:** **serif journal voice (user's choice).** Journal text uses Tailwind's `font-serif` (system serif stack: `ui-serif, Georgia, …`): the cover title, highlight quote, day titles and summaries, log text, reviews and reflection notes. Labels, buttons, times and stats stay the system sans.
 - **Trip list:** a past trip without a reflection gets a teal border and "How was it? Reflect on this trip →". A reflected one shows its stars and the start of its highlight.
 
+## Cover photos (F3.5)
+One main photo per trip, shown behind the cover title, on trip cards, and as a Plan view banner. Teal stays the fallback.
+
+**Data.** A `photo` table (id, owner_id, width, height, original_name, created_at) and `trip.cover_photo_id → photo.id` (ON DELETE SET NULL). The link goes from trip to photo, never back, so there is no circular foreign key. Item and log photos (and the F4.1 photo signal) can point at `photo` the same way later.
+
+**Files.** Stored on disk at `backend/data/photos/<photo id>/{sm,md,lg}.webp` (git-ignored; `PHOTOS_DIR` overrides). `PhotoStore` in `photos.py` hides the disk, so S3/R2 can replace it in Phase 6 without touching the routes.
+
+**Processing** (`photos.process()`, pure):
+- Accepts JPEG, PNG, WebP, and HEIC/HEIF (via `pillow-heif`), up to 20 MB. Anything else is a 422.
+- Applies the EXIF rotation, then re-encodes from pixels only. **No EXIF is written, so GPS location, camera, and timestamps are dropped.** The colour profile (ICC) is kept.
+- Three WebP copies by longest edge: `sm` 400px (cards), `md` 1200px (cover and banner), `lg` 2400px (large/retina). Never upscaled. Transparency is kept.
+
+**API**
+```
+PUT     /trips/{trip_id}/cover          multipart `file`; sets or replaces the cover, returns the trip
+DELETE  /trips/{trip_id}/cover          removes it (no-op if none), returns the trip
+GET     /photos/{photo_id}/{sm|md|lg}   the WebP file, Cache-Control: immutable
+```
+- Trip reads gain `cover: {id, width, height} | null`. The web builds the URL from the id and size.
+- Every upload gets a **new photo id**, and a photo is never edited. A URL's bytes therefore never change, which makes year-long browser caching safe. Replacing deletes the old photo and its files.
+- Order of operations: write the files, then commit the row; if the commit fails, the new files are removed. Old files are deleted only after the commit, so a failure never leaves a trip pointing at missing files. Deleting a trip deletes its cover the same way.
+- Uploads run in a sync route (a worker thread), so resizing doesn't block other requests.
+
+**Web**
+- **Past-trip cover:** with a photo, the cover grows taller (`min-h-72`, `sm:min-h-96`) and the text moves to the bottom over a scrim (`bg-linear-to-t from-black/80 via-black/45 to-black/15`, heaviest where the text is). Secondary text changes from `teal-100`/`teal-50` to `white/85`/`white/90`. Without a photo it is the solid teal cover, unchanged.
+- **Controls:** "Add cover photo" (then "Change photo" / "Remove") sit top-right on the cover as small translucent buttons (`bg-black/45`, blur), on the photo or on the teal. The Edit trip dialog has the same controls with a thumbnail. They save immediately (an upload), separately from the form's Save. A new trip gets its photo after creation, since an upload needs a trip id.
+- **Plan view:** a cover banner (`min-h-44`, `sm:min-h-60`) with the title and location on the scrim, shown only when the trip has a photo. Without one, the header is unchanged, and the photo is added from Edit trip.
+- **Trip cards:** a 112px (`h-28`) photo strip across the top, with no scrim (no text on it), lazy-loaded. It is greyed out for cancelled trips.
+- **Responsive images:** `srcSet` lists each copy at its real width (`lib/photo.ts`) and `sizes` says how wide it is drawn, so the browser picks the smallest copy that is sharp on that screen. Images are `alt=""` (decorative; the title is right there).
+- **Checks before upload:** type (JPEG/PNG/WebP/HEIC; HEIC often has no MIME type, so the extension counts) and the 20 MB cap, so a bad file fails before it's sent. The server validates again.
+- Code: `components/CoverPhoto.tsx` (`CoverImage`, `CoverPhotoControls`), `lib/photo.ts`, `api/hooks.ts` (`useSetCover`, `useRemoveCover`, multipart via `bodySerializer`), plus the cover in `TripRecord.tsx`, `TripPage.tsx`, `TripsPage.tsx`, and `TripForm.tsx`.
+
 ## Scaling up later (no reshaping needed)
 | Stage | Adds | Existing data |
 |---|---|---|
@@ -366,7 +398,7 @@ Design decisions (settled with the user on 2026-10-22):
 | Flight lookup | Fills `flight_detail` + places from SerpApi | Same columns as manual entry |
 
 ## Open questions (to settle in F2.1 or later)
-- Attachments (booking PDFs, photos): a `file` table + storage. Deferred.
+- Attachments (booking PDFs): a `file` table + storage. Deferred. Photos have their own `photo` table since F3.5 (see *Cover photos*).
 - Recurring or template trips: not planned.
 - Currency conversion for trip totals: show per-currency totals first.
 - Should `idea` items (wishlist, not scheduled) be allowed without times? Proposed yes: they appear in a trip's "unscheduled" list, not on a day.

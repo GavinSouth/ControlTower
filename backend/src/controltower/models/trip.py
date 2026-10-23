@@ -19,6 +19,7 @@ from controltower.models.types import TimeZoneName
 if TYPE_CHECKING:
     from controltower.models.item import Item
     from controltower.models.log import LogEntry
+    from controltower.models.photo import Photo
     from controltower.models.user import User
 
 
@@ -35,6 +36,10 @@ class Trip(UUIDPrimaryKey, Timestamps, Base):
     home_tz: Mapped[str] = mapped_column(TimeZoneName())  # for days with no items
     cancelled: Mapped[bool] = mapped_column(default=False)
     notes: Mapped[str | None] = mapped_column(Text)
+    # The main photo (F3.5). SET NULL so deleting a photo row never breaks its trip.
+    cover_photo_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("photo.id", ondelete="SET NULL")
+    )
 
     owner: Mapped[User] = relationship(back_populates="trips")
     # passive_deletes: let the database's ON DELETE CASCADE remove children.
@@ -47,6 +52,7 @@ class Trip(UUIDPrimaryKey, Timestamps, Base):
     log_entries: Mapped[list[LogEntry]] = relationship(
         back_populates="trip", cascade="all, delete-orphan", passive_deletes=True
     )
+    cover_photo: Mapped[Photo | None] = relationship()
 
     def __repr__(self) -> str:
         return f"Trip({self.title!r})"

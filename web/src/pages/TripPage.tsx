@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { usePlaces, useTimeline, useTrip } from '../api/hooks'
 import type { Day, Item, LogEntry, Timeline } from '../api/types'
+import { CoverImage, CoverPhotoControls } from '../components/CoverPhoto'
 import { DayCard } from '../components/DayCard'
 import { DayForm } from '../components/DayForm'
 import { ItemForm } from '../components/ItemForm'
@@ -55,6 +56,7 @@ export function TripPage() {
 
   const t = timeline.data
   const homeTz = trip.data.home_tz
+  const cover = trip.data.cover
   // A past trip opens as a record; the planning view is one toggle away (F3.4).
   const isPast = t.phase === 'past' && !trip.data.cancelled
   const back = (
@@ -99,10 +101,29 @@ export function TripPage() {
           {back}
           {toggle}
         </div>
+        {cover && (
+          <section
+            aria-label="Cover"
+            className="relative mt-3 flex min-h-44 flex-col justify-end overflow-hidden rounded-xl bg-teal-700 text-white sm:min-h-60"
+          >
+            <CoverImage photo={cover} sizes="(min-width: 1024px) 960px, 100vw" />
+            <div className="absolute top-3 right-3 z-10">
+              <CoverPhotoControls trip={trip.data} variant="overlay" />
+            </div>
+            <div className="relative p-5 sm:p-6">
+              <h1 className="text-2xl font-bold sm:text-3xl">{trip.data.title}</h1>
+              {trip.data.location && <p className="mt-1 text-white/90">📍 {trip.data.location}</p>}
+            </div>
+          </section>
+        )}
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">{trip.data.title}</h1>
-            {trip.data.location && <p className="mt-1 text-stone-700">📍 {trip.data.location}</p>}
+            {!cover && (
+              <>
+                <h1 className="text-2xl font-bold">{trip.data.title}</h1>
+                {trip.data.location && <p className="mt-1 text-stone-700">📍 {trip.data.location}</p>}
+              </>
+            )}
             <p className="mt-1 flex items-center gap-2 text-sm text-stone-500">
               <span>{formatRange(t.first_day, t.last_day) || 'No dates yet'}</span>
               <Badge tone={t.phase}>{trip.data.cancelled ? 'cancelled' : t.phase}</Badge>

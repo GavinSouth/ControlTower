@@ -105,6 +105,12 @@ class ReflectionBrief(ReadSchema):
     highlight: str | None
 
 
+class PhotoRead(ReadSchema):
+    id: UUID
+    width: int = Field(description="Width of the largest copy, in pixels")
+    height: int = Field(description="Height of the largest copy, in pixels")
+
+
 class TripRead(ReadSchema):
     id: UUID
     title: str
@@ -116,6 +122,9 @@ class TripRead(ReadSchema):
     phase: TripPhase
     reflection: ReflectionBrief | None = Field(
         description="My reflection's rating and highlight, for the trip list; null if none yet"
+    )
+    cover: PhotoRead | None = Field(
+        description="The cover photo; files at GET /photos/{id}/{sm|md|lg}. Null if none"
     )
     home_tz: str
     cancelled: bool

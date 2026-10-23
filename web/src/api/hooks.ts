@@ -86,6 +86,36 @@ export function useDeleteTrip(tripId: string) {
   })
 }
 
+/** Upload a cover photo (multipart). The server makes a new photo each time, so URLs never go stale. */
+export function useSetCover(tripId: string) {
+  const invalidate = useInvalidateTrips()
+  return useMutation({
+    mutationFn: async (file: File) =>
+      unwrap(
+        await api.PUT('/trips/{trip_id}/cover', {
+          params: { path: { trip_id: tripId } },
+          // The schema types a file field as a string; send the real File as form data.
+          body: { file: file as unknown as string },
+          bodySerializer: (body) => {
+            const form = new FormData()
+            form.append('file', body.file as unknown as File)
+            return form
+          },
+        }),
+      ),
+    onSuccess: invalidate,
+  })
+}
+
+export function useRemoveCover(tripId: string) {
+  const invalidate = useInvalidateTrips()
+  return useMutation({
+    mutationFn: async () =>
+      unwrap(await api.DELETE('/trips/{trip_id}/cover', { params: { path: { trip_id: tripId } } })),
+    onSuccess: invalidate,
+  })
+}
+
 export function useCreateItem(tripId: string) {
   const invalidate = useInvalidateTrips()
   return useMutation({

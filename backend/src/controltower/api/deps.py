@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from controltower.db import get_or_create_owner
 from controltower.models import Item, LogEntry, Place, Trip, User
+from controltower.photos import PhotoStore
 
 
 def get_session(request: Request) -> Iterator[Session]:
@@ -31,6 +32,14 @@ def get_owner(session: SessionDep) -> User:
 
 
 OwnerDep = Annotated[User, Depends(get_owner)]
+
+
+def get_photo_store(request: Request) -> PhotoStore:
+    store: PhotoStore = request.app.state.photo_store
+    return store
+
+
+PhotoStoreDep = Annotated[PhotoStore, Depends(get_photo_store)]
 
 
 def not_found(what: str) -> HTTPException:

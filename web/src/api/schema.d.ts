@@ -38,7 +38,7 @@ export interface paths {
         post?: never;
         /**
          * Delete Trip
-         * @description Deletes the trip with its items, days, and log entries. Places are kept.
+         * @description Deletes the trip with its items, days, log entries, and cover photo. Places are kept.
          */
         delete: operations["delete_trip_trips__trip_id__delete"];
         options?: never;
@@ -330,6 +330,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/trips/{trip_id}/cover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Cover
+         * @description Set or replace the trip's cover photo. EXIF data (incl. GPS location) is removed.
+         */
+        put: operations["put_cover_trips__trip_id__cover_put"];
+        post?: never;
+        /**
+         * Delete Cover
+         * @description Remove the trip's cover photo (no-op if it has none); the cover falls back to teal.
+         */
+        delete: operations["delete_cover_trips__trip_id__cover_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/photos/{photo_id}/{size}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Photo
+         * @description One stored copy of a photo: sm (400px), md (1200px), or lg (2400px), longest edge.
+         */
+        get: operations["read_photo_photos__photo_id___size__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -527,6 +571,14 @@ export interface components {
              * @enum {string}
              */
             kind: "activity";
+        };
+        /** Body_put_cover_trips__trip_id__cover_put */
+        Body_put_cover_trips__trip_id__cover_put: {
+            /**
+             * File
+             * @description JPEG, PNG, WebP, or HEIC, up to 20 MB
+             */
+            file: string;
         };
         /** DayRead */
         DayRead: {
@@ -1106,6 +1158,30 @@ export interface components {
              */
             kind: "note";
         };
+        /** PhotoRead */
+        PhotoRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Width
+             * @description Width of the largest copy, in pixels
+             */
+            width: number;
+            /**
+             * Height
+             * @description Height of the largest copy, in pixels
+             */
+            height: number;
+        };
+        /**
+         * PhotoSize
+         * @description Stored copies, by longest edge in pixels. Smaller images are never upscaled.
+         * @enum {string}
+         */
+        PhotoSize: "sm" | "md" | "lg";
         /** PlaceCreate */
         PlaceCreate: {
             /** Name */
@@ -1766,6 +1842,8 @@ export interface components {
             phase: components["schemas"]["TripPhase"];
             /** @description My reflection's rating and highlight, for the trip list; null if none yet */
             reflection: components["schemas"]["ReflectionBrief"] | null;
+            /** @description The cover photo; files at GET /photos/{id}/{sm|md|lg}. Null if none */
+            cover: components["schemas"]["PhotoRead"] | null;
             /** Home Tz */
             home_tz: string;
             /** Cancelled */
@@ -2782,6 +2860,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FavouriteRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_cover_trips__trip_id__cover_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_put_cover_trips__trip_id__cover_put"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_cover_trips__trip_id__cover_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_photo_photos__photo_id___size__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                photo_id: string;
+                size: components["schemas"]["PhotoSize"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The WebP file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": unknown;
                 };
             };
             /** @description Validation Error */

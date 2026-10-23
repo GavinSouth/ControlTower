@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from controltower.api.app import create_app
 from controltower.db import make_engine, make_session_factory
 from controltower.models import Base
+from controltower.photos import PhotoStore
 
 
 @pytest.fixture
@@ -34,7 +35,12 @@ def session(session_factory: sessionmaker[Session]) -> Iterator[Session]:
 
 
 @pytest.fixture
-def client(session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
-    """HTTP client for the API, backed by this test's temporary database."""
-    with TestClient(create_app(session_factory)) as client:
+def photo_store(tmp_path: Path) -> PhotoStore:
+    return PhotoStore(tmp_path / "photos")
+
+
+@pytest.fixture
+def client(session_factory: sessionmaker[Session], photo_store: PhotoStore) -> Iterator[TestClient]:
+    """HTTP client for the API, backed by this test's temporary database and photo folder."""
+    with TestClient(create_app(session_factory, photo_store)) as client:
         yield client

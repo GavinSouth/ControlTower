@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ControlTower API",
-    "description": "Trips broken down day by day: trips, items, places, day extras, trip log, and the past trip record (reflection, item feedback, stats, favourites).",
+    "description": "Trips broken down day by day: trips, items, places, day extras, trip log, the past trip record (reflection, item feedback, stats, favourites), and cover photos.",
     "version": "0.1.0"
   },
   "paths": {
@@ -197,7 +197,7 @@
           "trips"
         ],
         "summary": "Delete Trip",
-        "description": "Deletes the trip with its items, days, and log entries. Places are kept.",
+        "description": "Deletes the trip with its items, days, log entries, and cover photo. Places are kept.",
         "operationId": "delete_trip_trips__trip_id__delete",
         "parameters": [
           {
@@ -1594,6 +1594,150 @@
         }
       }
     },
+    "/trips/{trip_id}/cover": {
+      "put": {
+        "tags": [
+          "photos"
+        ],
+        "summary": "Put Cover",
+        "description": "Set or replace the trip's cover photo. EXIF data (incl. GPS location) is removed.",
+        "operationId": "put_cover_trips__trip_id__cover_put",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_put_cover_trips__trip_id__cover_put"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "photos"
+        ],
+        "summary": "Delete Cover",
+        "description": "Remove the trip's cover photo (no-op if it has none); the cover falls back to teal.",
+        "operationId": "delete_cover_trips__trip_id__cover_delete",
+        "parameters": [
+          {
+            "name": "trip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Trip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/photos/{photo_id}/{size}": {
+      "get": {
+        "tags": [
+          "photos"
+        ],
+        "summary": "Read Photo",
+        "description": "One stored copy of a photo: sm (400px), md (1200px), or lg (2400px), longest edge.",
+        "operationId": "read_photo_photos__photo_id___size__get",
+        "parameters": [
+          {
+            "name": "photo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Photo Id"
+            }
+          },
+          {
+            "name": "size",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PhotoSize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The WebP file",
+            "content": {
+              "image/webp": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -2348,6 +2492,21 @@
           "kind"
         ],
         "title": "ActivityRead"
+      },
+      "Body_put_cover_trips__trip_id__cover_put": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "JPEG, PNG, WebP, or HEIC, up to 20 MB"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_put_cover_trips__trip_id__cover_put"
       },
       "DayRead": {
         "properties": {
@@ -4599,6 +4758,42 @@
           "kind"
         ],
         "title": "NoteRead"
+      },
+      "PhotoRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "width": {
+            "type": "integer",
+            "title": "Width",
+            "description": "Width of the largest copy, in pixels"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height",
+            "description": "Height of the largest copy, in pixels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "width",
+          "height"
+        ],
+        "title": "PhotoRead"
+      },
+      "PhotoSize": {
+        "type": "string",
+        "enum": [
+          "sm",
+          "md",
+          "lg"
+        ],
+        "title": "PhotoSize",
+        "description": "Stored copies, by longest edge in pixels. Smaller images are never upscaled."
       },
       "PlaceCreate": {
         "properties": {
@@ -7174,6 +7369,17 @@
             ],
             "description": "My reflection's rating and highlight, for the trip list; null if none yet"
           },
+          "cover": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhotoRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The cover photo; files at GET /photos/{id}/{sm|md|lg}. Null if none"
+          },
           "home_tz": {
             "type": "string",
             "title": "Home Tz"
@@ -7215,6 +7421,7 @@
           "last_day",
           "phase",
           "reflection",
+          "cover",
           "home_tz",
           "cancelled",
           "notes",

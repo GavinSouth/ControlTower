@@ -233,3 +233,40 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
   - Upload: on the cover and in Edit trip.
   - Design: **build directly**, skipping the canvas.
 - Recorded in the ROADMAP F3.5 entry. Next: build F3.5 (new session per the one-feature-per-session rule, unless the user says to continue here).
+
+### F3.5 — Trip cover photo: backend (step 1) (2026-10-22)
+- Asked: `resume`, then "go ahead with step 1" after the build plan (backend → web → wrap-up) was proposed.
+- Built:
+  - Deps: `pillow`, `pillow-heif` (HEIC), `python-multipart` (FastAPI file uploads).
+  - `models/photo.py`: a `photo` table; `trip.cover_photo_id` (SET NULL). The link is one-way (trip → photo), so the foreign keys aren't circular. Migration `898ac4e06ea5`, applied to the local DB.
+  - `photos.py`: pure `process()` applies EXIF rotation, then writes WebP `sm`/`md`/`lg` (400/1200/2400px longest edge, no upscaling) with no EXIF (GPS dropped) and the ICC profile kept. JPEG/PNG/WebP/HEIC only, 20 MB cap. `PhotoStore` keeps the files at `data/photos/<id>/<size>.webp`, with `PHOTOS_DIR` as an override.
+  - `api/routes/photos.py`: `PUT/DELETE /trips/{id}/cover` (both return the trip), `GET /photos/{id}/{size}` (immutable cache). Trip reads gain `cover: {id, width, height} | null`. Deleting a trip removes its cover files.
+  - Tests: `test_photos.py` (sizes, rotation, EXIF/GPS stripped, formats, rejects) and `test_api_photos.py` (upload, replace, remove, trip delete, 422, 404). The `client` fixture now uses a temp photo folder.
+  - Web: `npm run gen:api`; `cover: null` added to the `App.test.tsx` fixture. No UI yet.
+- Decisions:
+  - Every upload is a new photo id, so URLs can be cached forever.
+  - Files are written before the commit and old files deleted after it, so a failure never leaves a trip pointing at missing files.
+  - DELETE cover returns the trip (200), not a 204, so the web can update in one round trip.
+  - Kept as a sync route so the resize runs in a worker thread.
+- Verified: backend ruff/format/mypy clean, 81 tests; web lint/typecheck/build clean, 34 tests.
+- Next: step 2, the web UI (cover with scrim, card strip, Plan banner, upload controls, phone width).
+- Asked: the app showed "failed to load page / connection refused". Cause: neither dev server was running (last session's had stopped). Started uvicorn :8000 + Vite :5173 in the background. `/health` ok; `/api/trips` through the proxy lists both demo trips with the new `cover: null`.
+
+### F3.5 — Trip cover photo: web UI (step 2) (2026-10-22)
+- Asked: what changed at a high level (answer: step 1 was backend only, nothing visible yet), then "go ahead with step 2".
+- Built:
+  - `lib/photo.ts`: `photoUrl`, `photoSrcSet` (each copy at its real width; duplicates dropped for small photos), and `uploadProblem` (type + 20 MB, HEIC by extension).
+  - `api/hooks.ts`: `useSetCover` (multipart: the generated type says `file: string`, so a `bodySerializer` builds the FormData) and `useRemoveCover`.
+  - `components/CoverPhoto.tsx`: `CoverImage` (img + optional scrim) and `CoverPhotoControls` (`overlay` on covers, `form` in Edit trip).
+  - Placements:
+    - past-trip cover: taller, text at the bottom over the scrim, teal fallback;
+    - Plan view: a banner with title and location, only when there is a photo;
+    - trip cards: a lazy `h-28` strip, greyed when cancelled;
+    - Edit trip: a "Cover photo" field with a thumbnail.
+- Tests: `lib/photo.test.ts`; `App.test.tsx` covers the card strip with its srcset, and an upload from the cover (refused at >20 MB; otherwise a multipart PUT). The fake API now reads multipart bodies as text.
+  - Gotcha: in Vitest, `fetch`/`FormData` are Node's (undici) but `File` is jsdom's, and undici rejects it. The test builds its File through a Node FormData round trip.
+- Verified:
+  - web lint/typecheck/build clean, 42 tests;
+  - a synthetic gradient image (no real photo) uploaded to "Lisbon (demo)" through the running API; `/api/photos/<id>/sm|lg` serves WebP through the Vite proxy.
+- Not verified: no screenshot or phone-width check. There's no browser automation on this machine (no Chrome or Playwright), so the user does the visual review.
+- Next: user review in the browser → step 3 (demo covers in the seeder, design system update, `/finish-feature`).
