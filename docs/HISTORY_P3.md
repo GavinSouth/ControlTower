@@ -218,3 +218,18 @@ Earlier phases: `HISTORY_P1.md` (tooling, scope, design), `HISTORY_P2.md` (datab
   - The `pending` count and the web's `isRateable` share one rule: flight/stay/transport/activity, not idea/skipped/cancelled.
 - Design system: updated (v6), canvas updated (v10); see above.
 - Next: Phase 3 is done. **F4.1 agentic trip log research** in a new session. Before that, the user should review the past-trip view in the browser (`uv run python -m controltower.demo`, then open "Lisbon (demo)").
+
+### F3.5 — Trip cover photo: proposed (2026-10-22)
+- Asked: let users upload a main photo for the green cover block (as a placeholder and visual sugar across the app). Does it make sense?
+- Answered: yes. Added **F3.5** to ROADMAP (Phase 3 back to IN PROGRESS). Proposed:
+  - files on disk + a `photo` table;
+  - resized copies with EXIF GPS stripped;
+  - a scrim under the cover text;
+  - a canvas pass first.
+- Open questions put to the user: where the photo shows, storage, upload entry point, design step.
+- Answers:
+  - The photo shows on all four placements: past-trip cover, trip cards, Plan view banner, phone.
+  - Storage: disk + `photo` table.
+  - Upload: on the cover and in Edit trip.
+  - Design: **build directly**, skipping the canvas.
+- Recorded in the ROADMAP F3.5 entry. Next: build F3.5 (new session per the one-feature-per-session rule, unless the user says to continue here).
